@@ -1,12 +1,22 @@
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 
-// Detect local IP or use localhost depending on environment
-// For Android Emulator, 10.0.2.2 points to host machine's localhost
-// For physical device, you'll need the actual IP of your computer (hardcoded for now or use environment var)
-const LOCALHOST_URL =
-  Platform.OS === "android"
-    ? "http://10.0.2.2:8000/api/v1"
-    : "http://localhost:8000/api/v1";
+const getBaseUrl = () => {
+  // If running in Expo Go (physical device), hostUri contains the computer's IP
+  const debuggerHost = Constants.expoConfig?.hostUri;
+  const localhost = debuggerHost?.split(":")[0];
 
-// In production, we would use an environment variable
-export const API_BASE_URL = LOCALHOST_URL;
+  if (localhost) {
+    return `http://${localhost}:8000/api/v1`;
+  }
+
+  // Fallback for Android Emulator
+  if (Platform.OS === "android") {
+    return "http://10.0.2.2:8000/api/v1";
+  }
+
+  // Fallback for iOS Simulator / Web
+  return "http://localhost:8000/api/v1";
+};
+
+export const API_BASE_URL = getBaseUrl();

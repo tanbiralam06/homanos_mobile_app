@@ -4,10 +4,18 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { useState } from "react";
 import { Link, useRouter } from "expo-router";
 import useAuthStore from "../../store/authStore";
+import {
+  colors,
+  spacing,
+  borderRadius,
+  fontSize,
+  fontWeight,
+} from "../../utils/theme";
 
 export default function Signup() {
   const router = useRouter();
@@ -28,27 +36,23 @@ export default function Signup() {
   };
 
   return (
-    <View className="flex-1 justify-center px-8 bg-background">
-      <View className="mb-10">
-        <Text className="text-4xl font-bold text-primary mb-2">
-          Create Account
-        </Text>
-        <Text className="text-lg text-textSecondary">
-          Join the Human OS network.
-        </Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Join the Human OS network.</Text>
       </View>
 
       {error && (
-        <View className="bg-red-100 p-3 rounded-lg mb-4">
-          <Text className="text-red-600">{error}</Text>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
 
-      <View className="space-y-4">
+      <View style={styles.formContainer}>
         <View>
-          <Text className="text-textSecondary mb-1 ml-1">Username</Text>
+          <Text style={styles.label}>Username</Text>
           <TextInput
-            className="w-full bg-white px-4 py-3 rounded-xl border border-gray-200 text-textPrimary"
+            style={styles.input}
             placeholder="human_one"
             placeholderTextColor="#9CA3AF"
             value={username}
@@ -57,10 +61,10 @@ export default function Signup() {
           />
         </View>
 
-        <View className="mt-4">
-          <Text className="text-textSecondary mb-1 ml-1">Email</Text>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Email</Text>
           <TextInput
-            className="w-full bg-white px-4 py-3 rounded-xl border border-gray-200 text-textPrimary"
+            style={styles.input}
             placeholder="you@example.com"
             placeholderTextColor="#9CA3AF"
             value={email}
@@ -70,10 +74,10 @@ export default function Signup() {
           />
         </View>
 
-        <View className="mt-4">
-          <Text className="text-textSecondary mb-1 ml-1">Password</Text>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Password</Text>
           <TextInput
-            className="w-full bg-white px-4 py-3 rounded-xl border border-gray-200 text-textPrimary"
+            style={styles.input}
             placeholder="••••••••"
             placeholderTextColor="#9CA3AF"
             value={password}
@@ -83,26 +87,104 @@ export default function Signup() {
         </View>
 
         <TouchableOpacity
-          className="w-full bg-primary py-4 rounded-xl items-center mt-6"
+          style={styles.button}
           onPress={handleSignup}
           disabled={isLoading}
         >
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text className="text-white font-bold text-lg">Sign Up</Text>
+            <Text style={styles.buttonText}>Sign Up</Text>
           )}
         </TouchableOpacity>
       </View>
 
-      <View className="flex-row justify-center mt-8">
-        <Text className="text-textSecondary">Already have an account? </Text>
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Already have an account? </Text>
         <Link href="/auth/login" asChild>
           <TouchableOpacity>
-            <Text className="text-secondary font-bold">Log In</Text>
+            <Text style={styles.linkText}>Log In</Text>
           </TouchableOpacity>
         </Link>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.background,
+  },
+  header: {
+    marginBottom: spacing.xxl,
+  },
+  title: {
+    fontSize: fontSize.huge,
+    fontWeight: fontWeight.bold,
+    color: colors.primary,
+    marginBottom: spacing.sm,
+  },
+  subtitle: {
+    fontSize: fontSize.lg,
+    color: colors.textSecondary,
+  },
+  errorContainer: {
+    backgroundColor: colors.errorLight,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.md,
+  },
+  errorText: {
+    color: colors.errorDark,
+  },
+  formContainer: {
+    gap: spacing.md,
+  },
+  inputGroup: {
+    marginTop: spacing.md,
+  },
+  label: {
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+    marginLeft: spacing.xs,
+  },
+  input: {
+    width: "100%",
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    color: colors.textPrimary,
+    fontSize: fontSize.base,
+  },
+  button: {
+    width: "100%",
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.xl,
+    alignItems: "center",
+    marginTop: spacing.lg,
+  },
+  buttonText: {
+    color: colors.white,
+    fontWeight: fontWeight.bold,
+    fontSize: fontSize.lg,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: spacing.xl,
+  },
+  footerText: {
+    color: colors.textSecondary,
+  },
+  linkText: {
+    color: colors.secondary,
+    fontWeight: fontWeight.bold,
+  },
+});
