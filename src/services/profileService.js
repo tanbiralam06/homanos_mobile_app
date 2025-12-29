@@ -29,3 +29,13 @@ export const getFollowingList = async (userId) => {
   const response = await api.get(`/follows/list/${userId}`);
   return response.data.data;
 };
+
+export const getFollowersList = async (userId) => {
+  const response = await api.get(`/follows/followers/${userId}`);
+  return response.data.data;
+};
+
+export const removeFollower = async (followerId) => {
+  const response = await api.delete(`/follows/r/${followerId}`);
+  return response.data;
+};
