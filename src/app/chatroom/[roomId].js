@@ -62,6 +62,20 @@ export default function ChatroomScreen() {
       setMessages(messagesData.reverse());
 
       setIsLoading(false);
+
+      // Check if user is already a participant
+      const isParticipant = roomData.participants.some(
+        (p) => p.userId === user._id
+      );
+
+      if (isParticipant) {
+        setDisplayName(user.username);
+        setIsJoined(true);
+        setShowJoinModal(false);
+        connectToRoom(roomData._id, user.username, false);
+      } else {
+        setShowJoinModal(true);
+      }
     } catch (error) {
       console.error("Error loading chatroom:", error);
       Alert.alert("Error", "Failed to load chatroom");
@@ -77,13 +91,25 @@ export default function ChatroomScreen() {
       const joinData = await joinChatroom(roomId, anonymous);
       setDisplayName(joinData.displayName);
 
+      await connectToRoom(roomId, joinData.displayName, anonymous);
+
+      setIsJoined(true);
+      setShowJoinModal(false);
+    } catch (error) {
+      console.error("Error joining room:", error);
+      Alert.alert("Error", "Failed to join room");
+    }
+  };
+
+  const connectToRoom = async (roomId, username, anonymous) => {
+    try {
       // Connect socket if not connected
       if (!socketService.isConnected()) {
         await socketService.connect();
       }
 
       // Join socket room
-      socketService.joinRoom(roomId, anonymous, joinData.displayName);
+      socketService.joinRoom(roomId, anonymous, username);
 
       // Listen for new messages
       socketService.onNewMessage((message) => {
@@ -102,12 +128,8 @@ export default function ChatroomScreen() {
       socketService.onUserLeft((data) => {
         console.log(`${data.username} left`);
       });
-
-      setIsJoined(true);
-      setShowJoinModal(false);
     } catch (error) {
-      console.error("Error joining room:", error);
-      Alert.alert("Error", "Failed to join room");
+      console.error("Error connecting to room:", error);
     }
   };
 
