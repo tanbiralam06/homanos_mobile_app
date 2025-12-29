@@ -43,6 +43,38 @@ export default function ChatroomScreen() {
 
   const flatListRef = useRef(null);
 
+  const connectToRoom = async (roomId, username, anonymous) => {
+    try {
+      // Connect socket if not connected
+      if (!socketService.isConnected()) {
+        await socketService.connect();
+      }
+
+      // Join socket room
+      socketService.joinRoom(roomId, anonymous, username);
+
+      // Listen for new messages
+      socketService.onNewMessage((message) => {
+        setMessages((prev) => [...prev, message]);
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      });
+
+      // Listen for user joined
+      socketService.onUserJoined((data) => {
+        console.log(`${data.username} joined`);
+      });
+
+      // Listen for user left
+      socketService.onUserLeft((data) => {
+        console.log(`${data.username} left`);
+      });
+    } catch (error) {
+      console.error("Error connecting to room:", error);
+    }
+  };
+
   useEffect(() => {
     loadChatroom();
 
@@ -64,8 +96,9 @@ export default function ChatroomScreen() {
       setIsLoading(false);
 
       // Check if user is already a participant
+      // Check if user is already a participant
       const isParticipant = roomData.participants.some(
-        (p) => p.userId === user._id
+        (p) => p.userId.toString() === user._id.toString()
       );
 
       if (isParticipant) {
@@ -98,38 +131,6 @@ export default function ChatroomScreen() {
     } catch (error) {
       console.error("Error joining room:", error);
       Alert.alert("Error", "Failed to join room");
-    }
-  };
-
-  const connectToRoom = async (roomId, username, anonymous) => {
-    try {
-      // Connect socket if not connected
-      if (!socketService.isConnected()) {
-        await socketService.connect();
-      }
-
-      // Join socket room
-      socketService.joinRoom(roomId, anonymous, username);
-
-      // Listen for new messages
-      socketService.onNewMessage((message) => {
-        setMessages((prev) => [...prev, message]);
-        setTimeout(() => {
-          flatListRef.current?.scrollToEnd({ animated: true });
-        }, 100);
-      });
-
-      // Listen for user joined
-      socketService.onUserJoined((data) => {
-        console.log(`${data.username} joined`);
-      });
-
-      // Listen for user left
-      socketService.onUserLeft((data) => {
-        console.log(`${data.username} left`);
-      });
-    } catch (error) {
-      console.error("Error connecting to room:", error);
     }
   };
 

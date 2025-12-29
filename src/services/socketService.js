@@ -1,7 +1,8 @@
 import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from "../utils/constants";
 
-const SOCKET_URL = "http://localhost:8000";
+const SOCKET_URL = API_BASE_URL.replace("/api/v1", "");
 
 class SocketService {
   constructor() {
