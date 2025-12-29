@@ -1,65 +1,183 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from "../../utils/theme";
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useState } from "react";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { createChatroom } from "../../services/chatroomService";
+import { useTheme } from "../../context/ThemeContext";
+import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
-export default function Create() {
+export default function CreateRoom() {
   const router = useRouter();
+  const { colors } = useTheme();
+
+  const [name, setName] = useState("");
+  const [topic, setTopic] = useState("");
+  const [description, setDescription] = useState("");
+  const [maxParticipants, setMaxParticipants] = useState("50");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCreate = async () => {
+    if (!name.trim() || !topic.trim()) {
+      Alert.alert("Error", "Name and Topic are required");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const newRoom = await createChatroom({
+        name: name.trim(),
+        topic: topic.trim(),
+        description: description.trim(),
+        maxParticipants: parseInt(maxParticipants) || 50,
+      });
+
+      Alert.alert("Success", "Chatroom created successfully");
+      router.replace(`/chatroom/${newRoom._id}`);
+    } catch (error) {
+      console.error("Create room error:", error);
+      Alert.alert("Error", "Failed to create chatroom");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Create</Text>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+          Create Room
+        </Text>
       </View>
 
-      <View style={styles.content}>
-        <Text style={styles.subtitle}>What would you like to create?</Text>
-
-        {/* Create Room Option */}
-        <TouchableOpacity
-          style={styles.optionCard}
-          onPress={() => router.push("/create-room")}
-        >
-          <View style={styles.iconContainer}>
-            <Ionicons name="chatbubbles" size={32} color={colors.primary} />
-          </View>
-          <View style={styles.optionContent}>
-            <Text style={styles.optionTitle}>Create Chat Room</Text>
-            <Text style={styles.optionDescription}>
-              Start a conversation with people nearby
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView style={styles.content}>
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.textPrimary }]}>
+              Room Name
             </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
+              placeholder="e.g. Tech Talk, Music Lovers"
+              placeholderTextColor={colors.textSecondary}
+              value={name}
+              onChangeText={setName}
+            />
           </View>
-          <Ionicons
-            name="chevron-forward"
-            size={24}
-            color={colors.textSecondary}
-          />
-        </TouchableOpacity>
 
-        {/* Create Post Option */}
-        <TouchableOpacity
-          style={[styles.optionCard, styles.disabledCard]}
-          disabled
-        >
-          <View style={styles.iconContainer}>
-            <Ionicons name="create" size={32} color={colors.textSecondary} />
-          </View>
-          <View style={styles.optionContent}>
-            <Text style={[styles.optionTitle, styles.disabledText]}>
-              Create Post
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.textPrimary }]}>
+              Topic
             </Text>
-            <Text style={styles.optionDescription}>Coming soon...</Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
+              placeholder="e.g. Technology, Music"
+              placeholderTextColor={colors.textSecondary}
+              value={topic}
+              onChangeText={setTopic}
+            />
           </View>
-          <Ionicons name="chevron-forward" size={24} color={colors.border} />
-        </TouchableOpacity>
-      </View>
+
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.textPrimary }]}>
+              Description (Optional)
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                styles.textArea,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
+              placeholder="What is this room about?"
+              placeholderTextColor={colors.textSecondary}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.textPrimary }]}>
+              Max Participants
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
+              placeholder="50"
+              placeholderTextColor={colors.textSecondary}
+              value={maxParticipants}
+              onChangeText={setMaxParticipants}
+              keyboardType="number-pad"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[
+              styles.createButton,
+              { backgroundColor: colors.primary },
+              isLoading && { opacity: 0.7 },
+            ]}
+            onPress={handleCreate}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <Text style={[styles.createButtonText, { color: colors.white }]}>
+                Create Room
+              </Text>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -67,65 +185,47 @@ export default function Create() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.white,
+    alignItems: "center",
   },
-  title: {
-    fontSize: fontSize.xxl,
+  headerTitle: {
+    fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: colors.primary,
   },
   content: {
+    flex: 1,
     padding: spacing.lg,
   },
-  subtitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.textPrimary,
+  formGroup: {
     marginBottom: spacing.lg,
   },
-  optionCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.white,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-  },
-  disabledCard: {
-    opacity: 0.5,
-  },
-  iconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: borderRadius.lg,
-    backgroundColor: colors.background,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: spacing.md,
-  },
-  optionContent: {
-    flex: 1,
-  },
-  optionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.primary,
+  label: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
     marginBottom: spacing.xs,
   },
-  disabledText: {
-    color: colors.textSecondary,
+  input: {
+    borderWidth: 1,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    fontSize: fontSize.base,
   },
-  optionDescription: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
+  textArea: {
+    minHeight: 100,
+  },
+  createButton: {
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.lg,
+    alignItems: "center",
+    marginTop: spacing.md,
+  },
+  createButtonText: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.bold,
   },
 });

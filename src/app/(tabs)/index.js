@@ -13,19 +13,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import useAuthStore from "../../store/authStore";
 import useChatroomStore from "../../store/chatroomStore";
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from "../../utils/theme";
+import { useTheme } from "../../context/ThemeContext";
+import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
 export default function Home() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const { chatrooms, fetchChatrooms, isLoading } = useChatroomStore();
   const [refreshing, setRefreshing] = useState(false);
+  const { colors } = useTheme();
 
   useEffect(() => {
     fetchChatrooms();
@@ -40,18 +36,29 @@ export default function Home() {
   const renderChatroomCard = (room) => (
     <TouchableOpacity
       key={room._id}
-      style={styles.chatroomCard}
+      style={[
+        styles.chatroomCard,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
       onPress={() => router.push(`/chatroom/${room._id}`)}
     >
-      <View style={styles.chatroomIcon}>
+      <View
+        style={[styles.chatroomIcon, { backgroundColor: colors.secondary }]}
+      >
         <Ionicons name="chatbubbles" size={24} color={colors.white} />
       </View>
       <View style={styles.chatroomContent}>
-        <Text style={styles.chatroomName}>{room.name}</Text>
-        <Text style={styles.chatroomTopic}>{room.topic}</Text>
+        <Text style={[styles.chatroomName, { color: colors.textPrimary }]}>
+          {room.name}
+        </Text>
+        <Text style={[styles.chatroomTopic, { color: colors.textSecondary }]}>
+          {room.topic}
+        </Text>
         <View style={styles.chatroomMeta}>
           <Ionicons name="people" size={14} color={colors.textSecondary} />
-          <Text style={styles.chatroomMetaText}>
+          <Text
+            style={[styles.chatroomMetaText, { color: colors.textSecondary }]}
+          >
             {room.participantCount || 0} people
           </Text>
         </View>
@@ -61,12 +68,22 @@ export default function Home() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
         <View>
-          <Text style={styles.logo}>Human OS</Text>
-          <Text style={styles.tagline}>Real life first.</Text>
+          <Text style={[styles.logo, { color: colors.primary }]}>Human OS</Text>
+          <Text style={[styles.tagline, { color: colors.textSecondary }]}>
+            Real life first.
+          </Text>
         </View>
         <TouchableOpacity onPress={() => router.push("/create-room")}>
           <Ionicons name="add-circle" size={32} color={colors.primary} />
@@ -78,15 +95,24 @@ export default function Home() {
         style={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
         }
       >
         {/* Welcome Card */}
-        <View style={styles.welcomeCard}>
-          <Text style={styles.welcomeTitle}>
+        <View
+          style={[
+            styles.welcomeCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.welcomeTitle, { color: colors.primary }]}>
             Welcome, {user?.username || "User"}!
           </Text>
-          <Text style={styles.welcomeText}>
+          <Text style={[styles.welcomeText, { color: colors.textSecondary }]}>
             Join a chat room or create your own to connect with people
           </Text>
         </View>
@@ -94,9 +120,21 @@ export default function Home() {
         {/* Trending Rooms */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>🔥 Active Rooms</Text>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              🔥 Active Rooms
+            </Text>
             {chatrooms.length > 0 && (
-              <Text style={styles.sectionCount}>{chatrooms.length}</Text>
+              <Text
+                style={[
+                  styles.sectionCount,
+                  {
+                    color: colors.textSecondary,
+                    backgroundColor: colors.background,
+                  },
+                ]}
+              >
+                {chatrooms.length}
+              </Text>
             )}
           </View>
 
@@ -113,15 +151,31 @@ export default function Home() {
                 size={48}
                 color={colors.border}
               />
-              <Text style={styles.emptyStateText}>No active rooms</Text>
-              <Text style={styles.emptyStateSubtext}>
+              <Text
+                style={[styles.emptyStateText, { color: colors.textSecondary }]}
+              >
+                No active rooms
+              </Text>
+              <Text
+                style={[
+                  styles.emptyStateSubtext,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Be the first to create one!
               </Text>
               <TouchableOpacity
-                style={styles.createButton}
+                style={[
+                  styles.createButton,
+                  { backgroundColor: colors.primary },
+                ]}
                 onPress={() => router.push("/create-room")}
               >
-                <Text style={styles.createButtonText}>Create Room</Text>
+                <Text
+                  style={[styles.createButtonText, { color: colors.white }]}
+                >
+                  Create Room
+                </Text>
               </TouchableOpacity>
             </View>
           )}
@@ -134,7 +188,6 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: "row",
@@ -143,17 +196,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.white,
   },
   logo: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
-    color: colors.primary,
   },
   tagline: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
     marginTop: spacing.xs / 2,
   },
   content: {
@@ -162,20 +211,16 @@ const styles = StyleSheet.create({
   welcomeCard: {
     margin: spacing.lg,
     padding: spacing.lg,
-    backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   welcomeTitle: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-    color: colors.primary,
     marginBottom: spacing.sm,
   },
   welcomeText: {
     fontSize: fontSize.base,
-    color: colors.textSecondary,
     lineHeight: 22,
   },
   section: {
@@ -191,13 +236,10 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
   },
   sectionCount: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    backgroundColor: colors.background,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs / 2,
     borderRadius: borderRadius.sm,
@@ -205,19 +247,16 @@ const styles = StyleSheet.create({
   chatroomCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.white,
     padding: spacing.md,
     marginHorizontal: spacing.lg,
     marginBottom: spacing.sm,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   chatroomIcon: {
     width: 48,
     height: 48,
     borderRadius: borderRadius.md,
-    backgroundColor: colors.secondary,
     alignItems: "center",
     justifyContent: "center",
     marginRight: spacing.md,
@@ -228,12 +267,10 @@ const styles = StyleSheet.create({
   chatroomName: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
     marginBottom: spacing.xs / 2,
   },
   chatroomTopic: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
     marginBottom: spacing.xs,
   },
   chatroomMeta: {
@@ -243,7 +280,6 @@ const styles = StyleSheet.create({
   },
   chatroomMetaText: {
     fontSize: fontSize.xs,
-    color: colors.textSecondary,
   },
   loadingContainer: {
     paddingVertical: spacing.xxl,
@@ -257,23 +293,19 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
     marginTop: spacing.md,
   },
   emptyStateSubtext: {
     fontSize: fontSize.base,
-    color: colors.textSecondary,
     marginTop: spacing.xs,
     marginBottom: spacing.lg,
   },
   createButton: {
-    backgroundColor: colors.primary,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.lg,
   },
   createButtonText: {
-    color: colors.white,
     fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
   },

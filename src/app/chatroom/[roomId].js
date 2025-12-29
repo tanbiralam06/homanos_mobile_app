@@ -23,18 +23,14 @@ import {
 } from "../../services/chatroomService";
 import socketService from "../../services/socketService";
 import useAuthStore from "../../store/authStore";
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from "../../utils/theme";
+import { useTheme } from "../../context/ThemeContext";
+import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
 export default function ChatroomScreen() {
   const router = useRouter();
   const { roomId } = useLocalSearchParams();
   const user = useAuthStore((state) => state.user);
+  const { colors, isDark } = useTheme();
 
   const [room, setRoom] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -147,7 +143,9 @@ export default function ChatroomScreen() {
         ]}
       >
         {!isOwnMessage && (
-          <Text style={styles.messageUsername}>
+          <Text
+            style={[styles.messageUsername, { color: colors.textSecondary }]}
+          >
             {item.username}
             {item.isAnonymous && " 👤"}
           </Text>
@@ -155,19 +153,31 @@ export default function ChatroomScreen() {
         <View
           style={[
             styles.messageBubble,
-            isOwnMessage ? styles.ownBubble : styles.otherBubble,
+            isOwnMessage
+              ? {
+                  backgroundColor: colors.primary,
+                  borderBottomRightRadius: spacing.xs,
+                }
+              : {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderWidth: 1,
+                  borderBottomLeftRadius: spacing.xs,
+                },
           ]}
         >
           <Text
             style={[
               styles.messageText,
-              isOwnMessage ? styles.ownMessageText : styles.otherMessageText,
+              isOwnMessage
+                ? { color: colors.white }
+                : { color: colors.textPrimary },
             ]}
           >
             {item.content}
           </Text>
         </View>
-        <Text style={styles.messageTime}>
+        <Text style={[styles.messageTime, { color: colors.textSecondary }]}>
           {new Date(item.createdAt).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -179,22 +189,39 @@ export default function ChatroomScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View
+        style={[
+          styles.loadingContainer,
+          { backgroundColor: colors.background },
+        ]}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
         <TouchableOpacity onPress={() => handleLeave()}>
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.roomName}>{room?.name}</Text>
-          <Text style={styles.roomTopic}>{room?.topic}</Text>
+          <Text style={[styles.roomName, { color: colors.primary }]}>
+            {room?.name}
+          </Text>
+          <Text style={[styles.roomTopic, { color: colors.textSecondary }]}>
+            {room?.topic}
+          </Text>
         </View>
         <TouchableOpacity>
           <Ionicons
@@ -223,9 +250,23 @@ export default function ChatroomScreen() {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
-          <View style={styles.inputContainer}>
+          <View
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: colors.surface,
+                borderTopColor: colors.border,
+              },
+            ]}
+          >
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.background,
+                  color: colors.textPrimary,
+                },
+              ]}
               placeholder="Type a message..."
               placeholderTextColor={colors.textSecondary}
               value={inputText}
@@ -236,7 +277,8 @@ export default function ChatroomScreen() {
             <TouchableOpacity
               style={[
                 styles.sendButton,
-                !inputText.trim() && styles.sendButtonDisabled,
+                { backgroundColor: colors.primary },
+                !inputText.trim() && { backgroundColor: colors.border },
               ]}
               onPress={handleSendMessage}
               disabled={!inputText.trim()}
@@ -259,22 +301,41 @@ export default function ChatroomScreen() {
         onRequestClose={() => router.back()}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Join Chat Room</Text>
-            <Text style={styles.modalSubtitle}>
+          <View
+            style={[styles.modalContent, { backgroundColor: colors.surface }]}
+          >
+            <Text style={[styles.modalTitle, { color: colors.primary }]}>
+              Join Chat Room
+            </Text>
+            <Text
+              style={[styles.modalSubtitle, { color: colors.textSecondary }]}
+            >
               How would you like to join?
             </Text>
 
             <TouchableOpacity
-              style={styles.joinOption}
+              style={[
+                styles.joinOption,
+                { backgroundColor: colors.background },
+              ]}
               onPress={() => handleJoin(false)}
             >
               <Ionicons name="person" size={32} color={colors.primary} />
               <View style={styles.joinOptionContent}>
-                <Text style={styles.joinOptionTitle}>
+                <Text
+                  style={[
+                    styles.joinOptionTitle,
+                    { color: colors.textPrimary },
+                  ]}
+                >
                   Join as {user?.username}
                 </Text>
-                <Text style={styles.joinOptionText}>
+                <Text
+                  style={[
+                    styles.joinOptionText,
+                    { color: colors.textSecondary },
+                  ]}
+                >
                   Your profile will be visible
                 </Text>
               </View>
@@ -286,13 +347,28 @@ export default function ChatroomScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.joinOption}
+              style={[
+                styles.joinOption,
+                { backgroundColor: colors.background },
+              ]}
               onPress={() => handleJoin(true)}
             >
               <Ionicons name="eye-off" size={32} color={colors.secondary} />
               <View style={styles.joinOptionContent}>
-                <Text style={styles.joinOptionTitle}>Join Anonymously</Text>
-                <Text style={styles.joinOptionText}>
+                <Text
+                  style={[
+                    styles.joinOptionTitle,
+                    { color: colors.textPrimary },
+                  ]}
+                >
+                  Join Anonymously
+                </Text>
+                <Text
+                  style={[
+                    styles.joinOptionText,
+                    { color: colors.textSecondary },
+                  ]}
+                >
                   You'll get a random guest name
                 </Text>
               </View>
@@ -307,7 +383,14 @@ export default function ChatroomScreen() {
               style={styles.cancelButton}
               onPress={() => router.back()}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text
+                style={[
+                  styles.cancelButtonText,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                Cancel
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -319,13 +402,11 @@ export default function ChatroomScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: "row",
@@ -333,9 +414,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    backgroundColor: colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   headerContent: {
     flex: 1,
@@ -344,11 +423,9 @@ const styles = StyleSheet.create({
   roomName: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: colors.primary,
   },
   roomTopic: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
   },
   messagesList: {
     padding: spacing.md,
@@ -367,7 +444,6 @@ const styles = StyleSheet.create({
   },
   messageUsername: {
     fontSize: fontSize.xs,
-    color: colors.textSecondary,
     marginBottom: spacing.xs / 2,
     marginLeft: spacing.sm,
   },
@@ -377,29 +453,12 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     maxWidth: "100%",
   },
-  ownBubble: {
-    backgroundColor: colors.primary,
-    borderBottomRightRadius: spacing.xs,
-  },
-  otherBubble: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderBottomLeftRadius: spacing.xs,
-  },
   messageText: {
     fontSize: fontSize.base,
     lineHeight: 20,
   },
-  ownMessageText: {
-    color: colors.white,
-  },
-  otherMessageText: {
-    color: colors.textPrimary,
-  },
   messageTime: {
     fontSize: fontSize.xs,
-    color: colors.textSecondary,
     marginTop: spacing.xs / 2,
     marginHorizontal: spacing.sm,
   },
@@ -407,18 +466,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     padding: spacing.md,
-    backgroundColor: colors.white,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   input: {
     flex: 1,
-    backgroundColor: colors.background,
     borderRadius: borderRadius.xl,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     fontSize: fontSize.base,
-    color: colors.textPrimary,
     maxHeight: 100,
     marginRight: spacing.sm,
   },
@@ -426,12 +481,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
-  },
-  sendButtonDisabled: {
-    backgroundColor: colors.border,
   },
   modalOverlay: {
     flex: 1,
@@ -439,7 +490,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: colors.white,
     borderTopLeftRadius: borderRadius.xxl,
     borderTopRightRadius: borderRadius.xxl,
     padding: spacing.xl,
@@ -447,19 +497,16 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
-    color: colors.primary,
     marginBottom: spacing.sm,
   },
   modalSubtitle: {
     fontSize: fontSize.base,
-    color: colors.textSecondary,
     marginBottom: spacing.xl,
   },
   joinOption: {
     flexDirection: "row",
     alignItems: "center",
     padding: spacing.lg,
-    backgroundColor: colors.background,
     borderRadius: borderRadius.lg,
     marginBottom: spacing.md,
   },
@@ -470,12 +517,10 @@ const styles = StyleSheet.create({
   joinOptionTitle: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
-    color: colors.textPrimary,
     marginBottom: spacing.xs / 2,
   },
   joinOptionText: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
   },
   cancelButton: {
     padding: spacing.md,
@@ -484,7 +529,6 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: fontSize.base,
-    color: colors.textSecondary,
     fontWeight: fontWeight.semibold,
   },
 });

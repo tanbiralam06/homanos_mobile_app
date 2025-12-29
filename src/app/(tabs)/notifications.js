@@ -1,19 +1,25 @@
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from "../../utils/theme";
+import { useTheme } from "../../context/ThemeContext";
+import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
 export default function Notifications() {
+  const { colors } = useTheme();
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Notifications</Text>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
+        <Text style={[styles.title, { color: colors.primary }]}>
+          Notifications
+        </Text>
       </View>
 
       <ScrollView style={styles.content}>
@@ -23,8 +29,14 @@ export default function Notifications() {
             size={64}
             color={colors.border}
           />
-          <Text style={styles.emptyStateText}>No notifications yet</Text>
-          <Text style={styles.emptyStateSubtext}>
+          <Text
+            style={[styles.emptyStateText, { color: colors.textSecondary }]}
+          >
+            No notifications yet
+          </Text>
+          <Text
+            style={[styles.emptyStateSubtext, { color: colors.textSecondary }]}
+          >
             We'll notify you when something happens
           </Text>
         </View>
@@ -36,19 +48,15 @@ export default function Notifications() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.white,
   },
   title: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
-    color: colors.primary,
   },
   content: {
     flex: 1,
@@ -62,12 +70,10 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
     marginTop: spacing.lg,
   },
   emptyStateSubtext: {
     fontSize: fontSize.base,
-    color: colors.textSecondary,
     marginTop: spacing.xs,
     textAlign: "center",
   },

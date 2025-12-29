@@ -2,79 +2,182 @@ import {
   View,
   Text,
   StyleSheet,
-  Switch,
   TouchableOpacity,
+  Switch,
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from "../../utils/theme";
+import { useState } from "react";
+import { useTheme } from "../../context/ThemeContext";
+import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
 export default function PrivacySettings() {
   const router = useRouter();
-  const [isPrivate, setIsPrivate] = useState(false);
+  const { colors } = useTheme();
 
-  const toggleSwitch = () => setIsPrivate((previousState) => !previousState);
+  // Mock state for privacy settings
+  const [isProfilePublic, setIsProfilePublic] = useState(true);
+  const [showOnlineStatus, setShowOnlineStatus] = useState(true);
+  const [allowMessages, setAllowMessages] = useState(true);
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Privacy</Text>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+          Privacy & Security
+        </Text>
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account Privacy</Text>
-          <View style={styles.settingItem}>
-            <View style={styles.settingTextContainer}>
-              <Text style={styles.settingLabel}>Private Account</Text>
-              <Text style={styles.settingDescription}>
-                When your account is private, only people you approve can see
-                your photos and videos. Your existing followers won't be
-                affected.
-              </Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+            Discovery
+          </Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <View style={styles.settingItem}>
+              <View style={styles.settingInfo}>
+                <Text
+                  style={[styles.settingLabel, { color: colors.textPrimary }]}
+                >
+                  Public Profile
+                </Text>
+                <Text
+                  style={[
+                    styles.settingDescription,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Allow others to find your profile
+                </Text>
+              </View>
+              <Switch
+                value={isProfilePublic}
+                onValueChange={setIsProfilePublic}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor={colors.white}
+              />
             </View>
-            <Switch
-              trackColor={{ false: colors.border, true: colors.primary }}
-              thumbColor={colors.white}
-              ios_backgroundColor={colors.border}
-              onValueChange={toggleSwitch}
-              value={isPrivate}
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
             />
+            <View style={styles.settingItem}>
+              <View style={styles.settingInfo}>
+                <Text
+                  style={[styles.settingLabel, { color: colors.textPrimary }]}
+                >
+                  Online Status
+                </Text>
+                <Text
+                  style={[
+                    styles.settingDescription,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Show when you are active
+                </Text>
+              </View>
+              <Switch
+                value={showOnlineStatus}
+                onValueChange={setShowOnlineStatus}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor={colors.white}
+              />
+            </View>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Connections</Text>
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Blocked Accounts</Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textSecondary}
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+            Communications
+          </Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <View style={styles.settingItem}>
+              <View style={styles.settingInfo}>
+                <Text
+                  style={[styles.settingLabel, { color: colors.textPrimary }]}
+                >
+                  Allow Messages
+                </Text>
+                <Text
+                  style={[
+                    styles.settingDescription,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Receive messages from everyone
+                </Text>
+              </View>
+              <Switch
+                value={allowMessages}
+                onValueChange={setAllowMessages}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor={colors.white}
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+            Data
+          </Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <TouchableOpacity style={styles.menuItem}>
+              <Text
+                style={[styles.menuItemText, { color: colors.textPrimary }]}
+              >
+                Blocked Users
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
             />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Muted Accounts</Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem}>
+              <Text style={[styles.menuItemText, { color: colors.error }]}>
+                Delete Account
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -84,7 +187,6 @@ export default function PrivacySettings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
   },
   header: {
     flexDirection: "row",
@@ -93,12 +195,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
   },
   content: {
     flex: 1,
@@ -110,40 +210,44 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     textTransform: "uppercase",
+  },
+  card: {
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    overflow: "hidden",
   },
   settingItem: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
+    padding: spacing.md,
   },
-  settingTextContainer: {
+  settingInfo: {
     flex: 1,
-    paddingRight: spacing.md,
+    marginRight: spacing.md,
   },
   settingLabel: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    fontWeight: fontWeight.medium,
+    marginBottom: 2,
   },
   settingDescription: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    lineHeight: 18,
+    fontSize: fontSize.xs,
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    padding: spacing.md,
   },
   menuItemText: {
     fontSize: fontSize.base,
-    color: colors.textPrimary,
+    fontWeight: fontWeight.medium,
+  },
+  divider: {
+    height: 1,
+    marginLeft: spacing.lg,
   },
 });

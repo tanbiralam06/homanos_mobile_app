@@ -1,19 +1,22 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import useAuthStore from "../../store/authStore";
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from "../../utils/theme";
+import { useTheme } from "../../context/ThemeContext";
+import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
 export default function Settings() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
+  const { colors, isDark, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -30,71 +33,180 @@ export default function Settings() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          Settings
+        </Text>
         <View style={{ width: 24 }} />
       </View>
 
-      <View style={styles.content}>
+      <ScrollView style={styles.content}>
+        {/* Appearance Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+            Appearance
+          </Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <TouchableOpacity style={styles.menuItem} onPress={toggleTheme}>
+              <View style={styles.menuItemLeft}>
+                <Ionicons
+                  name={isDark ? "moon" : "sunny"}
+                  size={22}
+                  color={colors.textPrimary}
+                />
+                <Text
+                  style={[styles.menuItemText, { color: colors.textPrimary }]}
+                >
+                  Dark Mode
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.toggleOuter,
+                  { backgroundColor: isDark ? colors.primary : colors.border },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.toggleInner,
+                    {
+                      backgroundColor: colors.white,
+                      transform: [{ translateX: isDark ? 20 : 2 }],
+                    },
+                  ]}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Account Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => router.push("/settings/account")}
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+            Account
+          </Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
           >
-            <View style={styles.menuItemLeft}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/settings/account")}
+            >
+              <View style={styles.menuItemLeft}>
+                <Ionicons
+                  name="person-outline"
+                  size={22}
+                  color={colors.textPrimary}
+                />
+                <Text
+                  style={[styles.menuItemText, { color: colors.textPrimary }]}
+                >
+                  Account Details
+                </Text>
+              </View>
               <Ionicons
-                name="person-circle-outline"
-                size={24}
-                color={colors.textPrimary}
+                name="chevron-forward"
+                size={20}
+                color={colors.textSecondary}
               />
-              <Text style={styles.menuItemText}>Account Details</Text>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textSecondary}
+            </TouchableOpacity>
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
             />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="log-out-outline" size={24} color={colors.error} />
-              <Text style={[styles.menuItemText, { color: colors.error }]}>
-                Logout
-              </Text>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => router.push("/settings/privacy")}
-          >
-            <View style={styles.menuItemLeft}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/settings/privacy")}
+            >
+              <View style={styles.menuItemLeft}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={22}
+                  color={colors.textPrimary}
+                />
+                <Text
+                  style={[styles.menuItemText, { color: colors.textPrimary }]}
+                >
+                  Privacy & Security
+                </Text>
+              </View>
               <Ionicons
-                name="lock-closed-outline"
-                size={24}
-                color={colors.textPrimary}
+                name="chevron-forward"
+                size={20}
+                color={colors.textSecondary}
               />
-              <Text style={styles.menuItemText}>Privacy</Text>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+
+        {/* Support Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+            Support
+          </Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <TouchableOpacity style={styles.menuItem}>
+              <View style={styles.menuItemLeft}>
+                <Ionicons
+                  name="help-circle-outline"
+                  size={22}
+                  color={colors.textPrimary}
+                />
+                <Text
+                  style={[styles.menuItemText, { color: colors.textPrimary }]}
+                >
+                  Help Center
+                </Text>
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
+            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+              <View style={styles.menuItemLeft}>
+                <Ionicons
+                  name="log-out-outline"
+                  size={22}
+                  color={colors.error}
+                />
+                <Text style={[styles.menuItemText, { color: colors.error }]}>
+                  Log Out
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -102,7 +214,6 @@ export default function Settings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
   },
   header: {
     flexDirection: "row",
@@ -111,12 +222,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
-  headerTitle: {
+  title: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
   },
   content: {
     flex: 1,
@@ -128,17 +237,20 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
     marginBottom: spacing.sm,
     textTransform: "uppercase",
+  },
+  card: {
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    overflow: "hidden",
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    paddingHorizontal: spacing.md,
   },
   menuItemLeft: {
     flexDirection: "row",
@@ -147,6 +259,21 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: fontSize.base,
-    color: colors.textPrimary,
+    fontWeight: fontWeight.medium,
+  },
+  divider: {
+    height: 1,
+    marginLeft: spacing.lg,
+  },
+  toggleOuter: {
+    width: 44,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+  },
+  toggleInner: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
   },
 });

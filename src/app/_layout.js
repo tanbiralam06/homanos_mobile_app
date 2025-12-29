@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
 import useAuthStore from "../store/authStore";
 import { colors } from "../utils/theme";
+import { ThemeProvider } from "../context/ThemeContext";
 
 export default function Layout() {
   const { isAuthenticated, isLoading, init } = useAuthStore();
@@ -36,11 +37,13 @@ export default function Layout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
+    <ThemeProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
+    </ThemeProvider>
   );
 }
 

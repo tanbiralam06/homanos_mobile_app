@@ -12,19 +12,15 @@ import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { universalSearch } from "../../services/chatroomService";
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from "../../utils/theme";
+import { useTheme } from "../../context/ThemeContext";
+import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
 export default function Search() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState({ people: [], chatrooms: [] });
   const [isLoading, setIsLoading] = useState(false);
+  const { colors } = useTheme();
 
   const handleSearch = async (query) => {
     setSearchQuery(query);
@@ -47,15 +43,22 @@ export default function Search() {
 
   const renderPerson = ({ item }) => (
     <TouchableOpacity
-      style={styles.resultItem}
+      style={[
+        styles.resultItem,
+        { backgroundColor: colors.surface, borderBottomColor: colors.border },
+      ]}
       onPress={() => router.push(`/user/${item._id}`)}
     >
-      <View style={styles.avatar}>
+      <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
         <Ionicons name="person" size={24} color={colors.white} />
       </View>
       <View style={styles.resultContent}>
-        <Text style={styles.resultTitle}>{item.fullName || item.username}</Text>
-        <Text style={styles.resultSubtitle}>@{item.username}</Text>
+        <Text style={[styles.resultTitle, { color: colors.textPrimary }]}>
+          {item.fullName || item.username}
+        </Text>
+        <Text style={[styles.resultSubtitle, { color: colors.textSecondary }]}>
+          @{item.username}
+        </Text>
       </View>
       <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
     </TouchableOpacity>
@@ -63,15 +66,26 @@ export default function Search() {
 
   const renderChatroom = ({ item }) => (
     <TouchableOpacity
-      style={styles.resultItem}
+      style={[
+        styles.resultItem,
+        { backgroundColor: colors.surface, borderBottomColor: colors.border },
+      ]}
       onPress={() => router.push(`/chatroom/${item._id}`)}
     >
-      <View style={[styles.avatar, styles.chatroomAvatar]}>
+      <View
+        style={[
+          styles.avatar,
+          styles.chatroomAvatar,
+          { backgroundColor: colors.secondary },
+        ]}
+      >
         <Ionicons name="chatbubbles" size={24} color={colors.white} />
       </View>
       <View style={styles.resultContent}>
-        <Text style={styles.resultTitle}>{item.name}</Text>
-        <Text style={styles.resultSubtitle}>
+        <Text style={[styles.resultTitle, { color: colors.textPrimary }]}>
+          {item.name}
+        </Text>
+        <Text style={[styles.resultSubtitle, { color: colors.textSecondary }]}>
           {item.topic} • {item.participantCount} people
         </Text>
       </View>
@@ -92,8 +106,14 @@ export default function Search() {
       return (
         <View style={styles.emptyState}>
           <Ionicons name="search-outline" size={64} color={colors.border} />
-          <Text style={styles.emptyStateText}>Search for people or rooms</Text>
-          <Text style={styles.emptyStateSubtext}>
+          <Text
+            style={[styles.emptyStateText, { color: colors.textSecondary }]}
+          >
+            Search for people or rooms
+          </Text>
+          <Text
+            style={[styles.emptyStateSubtext, { color: colors.textSecondary }]}
+          >
             Find and connect with others
           </Text>
         </View>
@@ -104,8 +124,14 @@ export default function Search() {
       return (
         <View style={styles.emptyState}>
           <Ionicons name="sad-outline" size={64} color={colors.border} />
-          <Text style={styles.emptyStateText}>No results found</Text>
-          <Text style={styles.emptyStateSubtext}>
+          <Text
+            style={[styles.emptyStateText, { color: colors.textSecondary }]}
+          >
+            No results found
+          </Text>
+          <Text
+            style={[styles.emptyStateSubtext, { color: colors.textSecondary }]}
+          >
             Try a different search term
           </Text>
         </View>
@@ -116,8 +142,16 @@ export default function Search() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <View style={styles.searchContainer}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
+      <View
+        style={[
+          styles.searchContainer,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+      >
         <Ionicons
           name="search"
           size={20}
@@ -125,7 +159,7 @@ export default function Search() {
           style={styles.searchIcon}
         />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: colors.textPrimary }]}
           placeholder="Search people, rooms..."
           placeholderTextColor={colors.textSecondary}
           value={searchQuery}
@@ -166,10 +200,34 @@ export default function Search() {
             keyExtractor={(item, index) => `${item.type}-${index}`}
             renderItem={({ item }) => {
               if (item.type === "chatroom-header") {
-                return <Text style={styles.sectionHeader}>Chat Rooms</Text>;
+                return (
+                  <Text
+                    style={[
+                      styles.sectionHeader,
+                      {
+                        color: colors.textSecondary,
+                        backgroundColor: colors.background,
+                      },
+                    ]}
+                  >
+                    Chat Rooms
+                  </Text>
+                );
               }
               if (item.type === "people-header") {
-                return <Text style={styles.sectionHeader}>People</Text>;
+                return (
+                  <Text
+                    style={[
+                      styles.sectionHeader,
+                      {
+                        color: colors.textSecondary,
+                        backgroundColor: colors.background,
+                      },
+                    ]}
+                  >
+                    People
+                  </Text>
+                );
               }
               if (item.type === "chatroom") {
                 return renderChatroom({ item: item.data });
@@ -187,29 +245,23 @@ export default function Search() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.white,
   },
   title: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
-    color: colors.primary,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     margin: spacing.lg,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.white,
     borderRadius: borderRadius.xl,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   searchIcon: {
     marginRight: spacing.sm,
@@ -218,7 +270,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: spacing.md,
     fontSize: fontSize.base,
-    color: colors.textPrimary,
   },
   emptyState: {
     flex: 1,
@@ -229,12 +280,10 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
     marginTop: spacing.lg,
   },
   emptyStateSubtext: {
     fontSize: fontSize.base,
-    color: colors.textSecondary,
     marginTop: spacing.xs,
   },
   resultsList: {
@@ -243,30 +292,25 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.bold,
-    color: colors.textSecondary,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.background,
   },
   resultItem: {
     flexDirection: "row",
     alignItems: "center",
     padding: spacing.md,
-    backgroundColor: colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   avatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
     marginRight: spacing.md,
   },
   chatroomAvatar: {
-    backgroundColor: colors.secondary,
+    // backgroundColor: colors.secondary, // Dynamic now
   },
   resultContent: {
     flex: 1,
@@ -274,11 +318,9 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
-    color: colors.textPrimary,
     marginBottom: spacing.xs / 2,
   },
   resultSubtitle: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
   },
 });

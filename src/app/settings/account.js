@@ -10,18 +10,14 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import useAuthStore from "../../store/authStore";
 import useProfileStore from "../../store/profileStore";
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from "../../utils/theme";
+import { useTheme } from "../../context/ThemeContext";
+import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
 export default function AccountDetails() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { profile } = useProfileStore();
+  const { colors } = useTheme();
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -34,21 +30,39 @@ export default function AccountDetails() {
 
   const renderDetailItem = (label, value, isSensitive = false) => (
     <View style={styles.detailItem}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={[styles.detailValue, isSensitive && styles.sensitiveValue]}>
+      <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
+        {label}
+      </Text>
+      <Text
+        style={[
+          styles.detailValue,
+          { color: colors.textPrimary },
+          isSensitive && styles.sensitiveValue,
+        ]}
+      >
         {value || "Not set"}
       </Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Account Details</Text>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+          Account Details
+        </Text>
         <TouchableOpacity onPress={() => router.push("/profile/edit")}>
           <Ionicons name="pencil" size={20} color={colors.primary} />
         </TouchableOpacity>
@@ -60,35 +74,66 @@ export default function AccountDetails() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Profile Information</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+            Profile Information
+          </Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
             {renderDetailItem(
               "Full Name",
               profile?.fullName || user?.username || "User"
             )}
-            <View style={styles.divider} />
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
             {renderDetailItem("Username", `@${user?.username}`)}
-            <View style={styles.divider} />
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
             {renderDetailItem("Bio", profile?.bio)}
-            <View style={styles.divider} />
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
             {renderDetailItem("Location", profile?.location)}
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Private Information</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+            Private Information
+          </Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
             {renderDetailItem("Email", user?.email)}
-            <View style={styles.divider} />
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
             {renderDetailItem("Password", "********", true)}
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>System</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+            System
+          </Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
             {renderDetailItem("Last Updated", formatDate(profile?.updatedAt))}
-            <View style={styles.divider} />
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
             {renderDetailItem("Member Since", formatDate(user?.createdAt))}
           </View>
         </View>
@@ -100,7 +145,6 @@ export default function AccountDetails() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background, // Use background color for better contrast
   },
   header: {
     flexDirection: "row",
@@ -108,14 +152,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
   },
   content: {
     flex: 1,
@@ -130,15 +171,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
     marginBottom: spacing.sm,
     textTransform: "uppercase",
   },
   card: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
     overflow: "hidden",
   },
   detailItem: {
@@ -146,12 +184,10 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: fontSize.xs,
-    color: colors.textSecondary,
     marginBottom: 4,
   },
   detailValue: {
     fontSize: fontSize.base,
-    color: colors.textPrimary,
     fontWeight: fontWeight.medium,
   },
   sensitiveValue: {
@@ -160,7 +196,6 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: colors.border,
     marginLeft: spacing.md,
   },
 });

@@ -1,14 +1,15 @@
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { withLayoutContext } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "../../utils/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "../../context/ThemeContext";
 
 const { Navigator } = createMaterialTopTabNavigator();
 const MaterialTopTabs = withLayoutContext(Navigator);
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   return (
     <MaterialTopTabs
       initialRouteName="index"
@@ -22,7 +23,7 @@ export default function TabsLayout() {
         swipeEnabled: true,
         animationEnabled: false,
         tabBarStyle: {
-          backgroundColor: colors.white,
+          backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.border,
           height: 60 + insets.bottom, // Add safe area to height
