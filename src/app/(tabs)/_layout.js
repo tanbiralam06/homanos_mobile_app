@@ -20,7 +20,7 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
         tabBarIndicatorStyle: { display: "none" }, // Hide the underline indicator
         swipeEnabled: true,
-        animationEnabled: true,
+        animationEnabled: false,
         tabBarStyle: {
           backgroundColor: colors.white,
           borderTopWidth: 1,
