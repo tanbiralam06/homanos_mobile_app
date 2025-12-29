@@ -1,14 +1,7 @@
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import {
   colors,
   spacing,
@@ -18,56 +11,55 @@ import {
 } from "../../utils/theme";
 
 export default function Create() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Create Post</Text>
+        <Text style={styles.title}>Create</Text>
       </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.content}
-      >
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.textInput}
-            placeholder="What's on your mind?"
-            placeholderTextColor={colors.textSecondary}
-            multiline
-            numberOfLines={8}
-            textAlignVertical="top"
+      <View style={styles.content}>
+        <Text style={styles.subtitle}>What would you like to create?</Text>
+
+        {/* Create Room Option */}
+        <TouchableOpacity
+          style={styles.optionCard}
+          onPress={() => router.push("/create-room")}
+        >
+          <View style={styles.iconContainer}>
+            <Ionicons name="chatbubbles" size={32} color={colors.primary} />
+          </View>
+          <View style={styles.optionContent}>
+            <Text style={styles.optionTitle}>Create Chat Room</Text>
+            <Text style={styles.optionDescription}>
+              Start a conversation with people nearby
+            </Text>
+          </View>
+          <Ionicons
+            name="chevron-forward"
+            size={24}
+            color={colors.textSecondary}
           />
-        </View>
-
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.mediaButton}>
-            <Ionicons name="image-outline" size={24} color={colors.primary} />
-            <Text style={styles.mediaButtonText}>Photo</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.mediaButton}>
-            <Ionicons
-              name="videocam-outline"
-              size={24}
-              color={colors.primary}
-            />
-            <Text style={styles.mediaButtonText}>Video</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.mediaButton}>
-            <Ionicons
-              name="location-outline"
-              size={24}
-              color={colors.primary}
-            />
-            <Text style={styles.mediaButtonText}>Location</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity style={styles.postButton}>
-          <Text style={styles.postButtonText}>Post</Text>
         </TouchableOpacity>
-      </KeyboardAvoidingView>
+
+        {/* Create Post Option */}
+        <TouchableOpacity
+          style={[styles.optionCard, styles.disabledCard]}
+          disabled
+        >
+          <View style={styles.iconContainer}>
+            <Ionicons name="create" size={32} color={colors.textSecondary} />
+          </View>
+          <View style={styles.optionContent}>
+            <Text style={[styles.optionTitle, styles.disabledText]}>
+              Create Post
+            </Text>
+            <Text style={styles.optionDescription}>Coming soon...</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color={colors.border} />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -90,47 +82,50 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   content: {
-    flex: 1,
     padding: spacing.lg,
   },
-  inputContainer: {
+  subtitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
+  },
+  optionCard: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
+    padding: spacing.lg,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.md,
-    minHeight: 200,
+    marginBottom: spacing.md,
   },
-  textInput: {
-    fontSize: fontSize.base,
-    color: colors.textPrimary,
+  disabledCard: {
+    opacity: 0.5,
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: borderRadius.lg,
+    backgroundColor: colors.background,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.md,
+  },
+  optionContent: {
     flex: 1,
   },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  mediaButton: {
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  mediaButtonText: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-    fontWeight: fontWeight.medium,
-  },
-  postButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.xl,
-    alignItems: "center",
-    marginTop: spacing.lg,
-  },
-  postButtonText: {
-    color: colors.white,
+  optionTitle: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
+    color: colors.primary,
+    marginBottom: spacing.xs,
+  },
+  disabledText: {
+    color: colors.textSecondary,
+  },
+  optionDescription: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
   },
 });
