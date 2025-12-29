@@ -34,17 +34,7 @@ export default function Profile() {
   );
 
   const handleMenuPress = () => {
-    Alert.alert("Menu", "Settings and Logout options will appear here.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          await logout();
-          router.replace("/auth/login");
-        },
-      },
-    ]);
+    router.push("/settings");
   };
 
   return (
