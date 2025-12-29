@@ -44,6 +44,24 @@ export default function Settings() {
         {/* Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/settings/account")}
+          >
+            <View style={styles.menuItemLeft}>
+              <Ionicons
+                name="person-circle-outline"
+                size={24}
+                color={colors.textPrimary}
+              />
+              <Text style={styles.menuItemText}>Account Details</Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="log-out-outline" size={24} color={colors.error} />
