@@ -54,8 +54,8 @@ export default function Search() {
         <Ionicons name="person" size={24} color={colors.white} />
       </View>
       <View style={styles.resultContent}>
-        <Text style={styles.resultTitle}>@{item.username}</Text>
-        <Text style={styles.resultSubtitle}>{item.email}</Text>
+        <Text style={styles.resultTitle}>{item.fullName || item.username}</Text>
+        <Text style={styles.resultSubtitle}>@{item.username}</Text>
       </View>
       <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
     </TouchableOpacity>
