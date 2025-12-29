@@ -7,8 +7,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import useAuthStore from "../../store/authStore";
+import useProfileStore from "../../store/profileStore";
+import { useCallback } from "react";
 import {
   colors,
   spacing,
@@ -20,7 +22,14 @@ import {
 export default function Profile() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const { profile, fetchProfile } = useProfileStore();
   const router = useRouter();
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+    }, [])
+  );
 
   const handleLogout = async () => {
     await logout();
@@ -42,8 +51,24 @@ export default function Profile() {
           <View style={styles.avatar}>
             <Ionicons name="person" size={48} color={colors.white} />
           </View>
-          <Text style={styles.username}>@{user?.username || "username"}</Text>
+          <Text style={styles.username}>
+            @{user?.username || profile?.owner?.username || "username"}
+          </Text>
           <Text style={styles.email}>{user?.email || "email@example.com"}</Text>
+          {profile?.fullName ? (
+            <Text style={styles.fullName}>{profile.fullName}</Text>
+          ) : null}
+          {profile?.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
+          {profile?.location ? (
+            <View style={styles.locationContainer}>
+              <Ionicons
+                name="location-outline"
+                size={16}
+                color={colors.textSecondary}
+              />
+              <Text style={styles.location}>{profile.location}</Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Stats */}
@@ -65,7 +90,10 @@ export default function Profile() {
         </View>
 
         {/* Edit Profile Button */}
-        <TouchableOpacity style={styles.editButton}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => router.push("/profile/edit")}
+        >
           <Text style={styles.editButtonText}>Edit Profile</Text>
         </TouchableOpacity>
 
@@ -132,6 +160,29 @@ const styles = StyleSheet.create({
   },
   email: {
     fontSize: fontSize.base,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  fullName: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  bio: {
+    fontSize: fontSize.base,
+    color: colors.textPrimary,
+    textAlign: "center",
+    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.xs,
+  },
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  location: {
+    fontSize: fontSize.sm,
     color: colors.textSecondary,
   },
   stats: {
