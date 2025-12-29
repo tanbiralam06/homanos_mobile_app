@@ -49,7 +49,9 @@ export default function AccountDetails() {
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Account Details</Text>
-        <View style={{ width: 24 }} />
+        <TouchableOpacity onPress={() => router.push("/profile/edit")}>
+          <Ionicons name="pencil" size={20} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   login as apiLogin,
   register as apiRegister,
@@ -63,8 +64,16 @@ const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
-    await apiLogout();
     set({ user: null, isAuthenticated: false });
+  },
+
+  updateUser: async (userData) => {
+    set((state) => {
+      const updatedUser = { ...state.user, ...userData };
+      // Update AsyncStorage
+      AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+      return { user: updatedUser };
+    });
   },
 }));
 
