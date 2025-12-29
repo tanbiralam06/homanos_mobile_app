@@ -1,0 +1,317 @@
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  StatusBar,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { getUserProfile } from "../../services/profileService";
+import {
+  colors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+} from "../../utils/theme";
+
+export default function UserProfile() {
+  const { id } = useLocalSearchParams();
+  const router = useRouter();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const data = await getUserProfile(id);
+        setProfile(data);
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+        setError("Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchUserProfile();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error || "User not found"}</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.primary} />
+          <Text style={styles.backButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          {profile?.owner?.username || "Profile"}
+        </Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Top Section: Avatar + Stats */}
+        <View style={styles.topSection}>
+          {/* Avatar Column */}
+          <View style={styles.avatarColumn}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Ionicons name="person" size={50} color={colors.white} />
+              </View>
+            </View>
+            <Text style={styles.fullName} numberOfLines={1}>
+              {profile?.fullName || profile?.owner?.username || "User"}
+            </Text>
+          </View>
+
+          {/* Stats Column */}
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>0</Text>
+              <Text style={styles.statLabel}>Posts</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>0</Text>
+              <Text style={styles.statLabel}>Followers</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>0</Text>
+              <Text style={styles.statLabel}>Following</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Bio Section */}
+        <View style={styles.bioSection}>
+          {profile?.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
+
+          {profile?.location ? (
+            <View style={styles.locationContainer}>
+              <Ionicons
+                name="location-outline"
+                size={14}
+                color={colors.textSecondary}
+              />
+              <Text style={styles.location}>{profile.location}</Text>
+            </View>
+          ) : null}
+        </View>
+
+        {/* Content Tabs */}
+        <View style={styles.tabContainer}>
+          <View style={styles.activeTab}>
+            <Ionicons name="grid" size={24} color={colors.textPrimary} />
+          </View>
+        </View>
+
+        {/* Posts Grid */}
+        <View style={styles.postsGrid}>
+          {/* Empty State */}
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIconContainer}>
+              <Ionicons
+                name="camera-outline"
+                size={40}
+                color={colors.textSecondary}
+              />
+            </View>
+            <Text style={styles.emptyStateText}>No posts yet</Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: spacing.lg,
+  },
+  errorText: {
+    fontSize: fontSize.lg,
+    color: colors.error,
+    marginBottom: spacing.md,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backButtonText: {
+    marginLeft: spacing.sm,
+    fontSize: fontSize.base,
+    color: colors.primary,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+  },
+  headerTitle: {
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
+    color: colors.textPrimary,
+  },
+  content: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: spacing.xxl,
+  },
+  topSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+  },
+  avatarColumn: {
+    alignItems: "center",
+    marginRight: spacing.lg,
+  },
+  avatarContainer: {
+    position: "relative",
+    marginBottom: spacing.xs,
+  },
+  avatar: {
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  fullName: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+    color: colors.textPrimary,
+    maxWidth: 90,
+    textAlign: "center",
+  },
+  statsContainer: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+  statItem: {
+    alignItems: "center",
+  },
+  statValue: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    color: colors.textPrimary,
+  },
+  statLabel: {
+    fontSize: fontSize.sm,
+    color: colors.textPrimary,
+  },
+  bioSection: {
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.md,
+  },
+  bio: {
+    fontSize: fontSize.base,
+    color: colors.textPrimary,
+    lineHeight: 20,
+  },
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: spacing.xs,
+    gap: 2,
+  },
+  location: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+  },
+  tabContainer: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    marginTop: spacing.lg,
+  },
+  activeTab: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.textPrimary,
+  },
+  postsGrid: {
+    minHeight: 300,
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: spacing.xxl,
+  },
+  emptyIconContainer: {
+    marginBottom: spacing.sm,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: colors.textPrimary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyStateText: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    color: colors.textPrimary,
+  },
+});

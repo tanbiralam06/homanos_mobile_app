@@ -9,3 +9,8 @@ export const updateProfile = async (data) => {
   const response = await api.patch("/profile/update", data);
   return response.data.data;
 };
+
+export const getUserProfile = async (userId) => {
+  const response = await api.get(`/profile/u/${userId}`);
+  return response.data.data;
+};

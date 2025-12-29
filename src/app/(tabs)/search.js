@@ -46,7 +46,10 @@ export default function Search() {
   };
 
   const renderPerson = ({ item }) => (
-    <TouchableOpacity style={styles.resultItem}>
+    <TouchableOpacity
+      style={styles.resultItem}
+      onPress={() => router.push(`/user/${item._id}`)}
+    >
       <View style={styles.avatar}>
         <Ionicons name="person" size={24} color={colors.white} />
       </View>
@@ -114,10 +117,6 @@ export default function Search() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Search</Text>
-      </View>
-
       <View style={styles.searchContainer}>
         <Ionicons
           name="search"
