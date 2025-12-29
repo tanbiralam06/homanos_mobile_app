@@ -1,73 +1,86 @@
-import { Tabs } from "expo-router";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { withLayoutContext } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../utils/theme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const { Navigator } = createMaterialTopTabNavigator();
+const MaterialTopTabs = withLayoutContext(Navigator);
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
   return (
-    <Tabs
+    <MaterialTopTabs
+      initialRouteName="index"
+      tabBarPosition="bottom"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
+        tabBarShowLabel: false,
+        tabBarIndicatorStyle: { display: "none" }, // Hide the underline indicator
+        swipeEnabled: true,
+        animationEnabled: true,
         tabBarStyle: {
           backgroundColor: colors.white,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
+          height: 60 + insets.bottom, // Add safe area to height
+          paddingBottom: insets.bottom, // Add safe area padding
+          elevation: 0, // Remove shadow on Android
+          shadowOpacity: 0, // Remove shadow on iOS
         },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "600",
+        tabBarIconStyle: {
+          height: 30,
+          width: 30,
         },
       }}
     >
-      <Tabs.Screen
+      <MaterialTopTabs.Screen
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home" size={26} color={color} />
           ),
         }}
       />
-      <Tabs.Screen
+      <MaterialTopTabs.Screen
         name="search"
         options={{
           title: "Search",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="search" size={26} color={color} />
           ),
         }}
       />
-      <Tabs.Screen
+      <MaterialTopTabs.Screen
         name="create"
         options={{
           title: "Create",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="add-circle" size={26} color={color} />
           ),
         }}
       />
-      <Tabs.Screen
+      <MaterialTopTabs.Screen
         name="notifications"
         options={{
           title: "Notifications",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="notifications" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="notifications" size={26} color={color} />
           ),
         }}
       />
-      <Tabs.Screen
+      <MaterialTopTabs.Screen
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person" size={26} color={color} />
           ),
         }}
       />
-    </Tabs>
+    </MaterialTopTabs>
   );
 }
