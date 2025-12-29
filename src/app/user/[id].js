@@ -11,7 +11,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { getUserProfile } from "../../services/profileService";
+import {
+  getUserProfile,
+  getFollowStatus,
+  toggleFollow,
+} from "../../services/profileService";
 import {
   colors,
   spacing,
@@ -24,14 +28,19 @@ export default function UserProfile() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [profile, setProfile] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const data = await getUserProfile(id);
-        setProfile(data);
+        const [profileData, followData] = await Promise.all([
+          getUserProfile(id),
+          getFollowStatus(id),
+        ]);
+        setProfile(profileData);
+        setIsFollowing(followData.isFollowing);
       } catch (err) {
         console.error("Error fetching user profile:", err);
         setError("Failed to load profile");
@@ -44,6 +53,15 @@ export default function UserProfile() {
       fetchUserProfile();
     }
   }, [id]);
+
+  const handleFollowToggle = async () => {
+    try {
+      const data = await toggleFollow(id);
+      setIsFollowing(data.isFollowing);
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -109,11 +127,15 @@ export default function UserProfile() {
               <Text style={styles.statLabel}>Posts</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>0</Text>
+              <Text style={styles.statValue}>
+                {profile?.followersCount || 0}
+              </Text>
               <Text style={styles.statLabel}>Followers</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>0</Text>
+              <Text style={styles.statValue}>
+                {profile?.followingCount || 0}
+              </Text>
               <Text style={styles.statLabel}>Following</Text>
             </View>
           </View>
@@ -135,6 +157,26 @@ export default function UserProfile() {
           ) : null}
         </View>
 
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={[styles.followButton, isFollowing && styles.followingButton]}
+            onPress={handleFollowToggle}
+          >
+            <Text
+              style={[
+                styles.followButtonText,
+                isFollowing && styles.followingButtonText,
+              ]}
+            >
+              {isFollowing ? "Following" : "Follow"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.messageButton}>
+            <Text style={styles.messageButtonText}>Message</Text>
+          </TouchableOpacity>
+        </View>
         {/* Content Tabs */}
         <View style={styles.tabContainer}>
           <View style={styles.activeTab}>
@@ -278,11 +320,49 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.textSecondary,
   },
+  actionButtons: {
+    flexDirection: "row",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: spacing.md,
+  },
+  followButton: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    borderRadius: borderRadius.md,
+    alignItems: "center",
+  },
+  followingButton: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  followButtonText: {
+    color: colors.white,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.sm,
+  },
+  followingButtonText: {
+    color: colors.textPrimary,
+  },
+  messageButton: {
+    flex: 1,
+    backgroundColor: "#EFEFEF",
+    paddingVertical: 10,
+    borderRadius: borderRadius.md,
+    alignItems: "center",
+  },
+  messageButtonText: {
+    color: colors.textPrimary,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.sm,
+  },
   tabContainer: {
     flexDirection: "row",
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    marginTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: spacing.md,
   },
   activeTab: {
     flex: 1,

@@ -14,3 +14,13 @@ export const getUserProfile = async (userId) => {
   const response = await api.get(`/profile/u/${userId}`);
   return response.data.data;
 };
+
+export const toggleFollow = async (userId) => {
+  const response = await api.post(`/follows/c/${userId}`);
+  return response.data.data;
+};
+
+export const getFollowStatus = async (userId) => {
+  const response = await api.get(`/follows/s/${userId}`);
+  return response.data.data;
+};

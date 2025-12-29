@@ -81,18 +81,24 @@ export default function Profile() {
             </Text>
           </View>
 
-          {/* Stats Column */}
+          {/* Stats */}
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>0</Text>
               <Text style={styles.statLabel}>Posts</Text>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>0</Text>
+              <Text style={styles.statValue}>
+                {profile?.followersCount || 0}
+              </Text>
               <Text style={styles.statLabel}>Followers</Text>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>0</Text>
+              <Text style={styles.statValue}>
+                {profile?.followingCount || 0}
+              </Text>
               <Text style={styles.statLabel}>Following</Text>
             </View>
           </View>
