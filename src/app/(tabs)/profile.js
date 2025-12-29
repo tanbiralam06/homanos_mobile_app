@@ -95,12 +95,20 @@ export default function Profile() {
               <Text style={styles.statLabel}>Followers</Text>
             </View>
             <View style={styles.statDivider} />
-            <View style={styles.statItem}>
+            <TouchableOpacity
+              style={styles.statItem}
+              onPress={() =>
+                router.push({
+                  pathname: "/user/following",
+                  params: { userId: user?._id || profile?.owner?._id },
+                })
+              }
+            >
               <Text style={styles.statValue}>
                 {profile?.followingCount || 0}
               </Text>
               <Text style={styles.statLabel}>Following</Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 

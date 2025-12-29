@@ -24,3 +24,8 @@ export const getFollowStatus = async (userId) => {
   const response = await api.get(`/follows/s/${userId}`);
   return response.data.data;
 };
+
+export const getFollowingList = async (userId) => {
+  const response = await api.get(`/follows/list/${userId}`);
+  return response.data.data;
+};
