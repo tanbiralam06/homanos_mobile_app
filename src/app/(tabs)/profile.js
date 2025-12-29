@@ -4,6 +4,8 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  StatusBar,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -31,39 +33,80 @@ export default function Profile() {
     }, [])
   );
 
-  const handleLogout = async () => {
-    await logout();
-    router.replace("/auth/login");
+  const handleMenuPress = () => {
+    Alert.alert("Menu", "Settings and Logout options will appear here.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await logout();
+          router.replace("/auth/login");
+        },
+      },
+    ]);
   };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
-        <TouchableOpacity onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color={colors.error} />
+        <Text style={styles.headerTitle}>
+          {user?.username || profile?.owner?.username || "username"}
+        </Text>
+        <TouchableOpacity onPress={handleMenuPress} style={styles.menuButton}>
+          <Ionicons name="menu-outline" size={28} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={48} color={colors.white} />
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Top Section: Avatar + Stats */}
+        <View style={styles.topSection}>
+          {/* Avatar Column */}
+          <View style={styles.avatarColumn}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Ionicons name="person" size={50} color={colors.white} />
+              </View>
+              <View style={styles.onlineBadge} />
+            </View>
+            <Text style={styles.fullName} numberOfLines={1}>
+              {profile?.fullName || user?.username || "New User"}
+            </Text>
           </View>
-          <Text style={styles.username}>
-            @{user?.username || profile?.owner?.username || "username"}
-          </Text>
-          <Text style={styles.email}>{user?.email || "email@example.com"}</Text>
-          {profile?.fullName ? (
-            <Text style={styles.fullName}>{profile.fullName}</Text>
-          ) : null}
+
+          {/* Stats Column */}
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>0</Text>
+              <Text style={styles.statLabel}>Posts</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>0</Text>
+              <Text style={styles.statLabel}>Followers</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>0</Text>
+              <Text style={styles.statLabel}>Following</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Bio Section */}
+        <View style={styles.bioSection}>
           {profile?.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
+
           {profile?.location ? (
             <View style={styles.locationContainer}>
               <Ionicons
                 name="location-outline"
-                size={16}
+                size={14}
                 color={colors.textSecondary}
               />
               <Text style={styles.location}>{profile.location}</Text>
@@ -71,41 +114,35 @@ export default function Profile() {
           ) : null}
         </View>
 
-        {/* Stats */}
-        <View style={styles.stats}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>0</Text>
-            <Text style={styles.statLabel}>Posts</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>0</Text>
-            <Text style={styles.statLabel}>Followers</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>0</Text>
-            <Text style={styles.statLabel}>Following</Text>
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => router.push("/profile/edit")}
+          >
+            <Text style={styles.editButtonText}>Edit Profile</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Content Tabs */}
+        <View style={styles.tabContainer}>
+          <View style={styles.activeTab}>
+            <Ionicons name="grid" size={24} color={colors.textPrimary} />
           </View>
         </View>
 
-        {/* Edit Profile Button */}
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => router.push("/profile/edit")}
-        >
-          <Text style={styles.editButtonText}>Edit Profile</Text>
-        </TouchableOpacity>
-
-        {/* Posts Section */}
-        <View style={styles.postsSection}>
-          <Text style={styles.sectionTitle}>Your Posts</Text>
+        {/* Posts Grid */}
+        <View style={styles.postsGrid}>
+          {/* Empty State */}
           <View style={styles.emptyState}>
-            <Ionicons name="images-outline" size={48} color={colors.border} />
+            <View style={styles.emptyIconContainer}>
+              <Ionicons
+                name="camera-outline"
+                size={40}
+                color={colors.textSecondary}
+              />
+            </View>
             <Text style={styles.emptyStateText}>No posts yet</Text>
-            <Text style={styles.emptyStateSubtext}>
-              Share your first moment
-            </Text>
           </View>
         </View>
       </ScrollView>
@@ -116,137 +153,161 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    paddingVertical: spacing.sm,
     backgroundColor: colors.white,
   },
-  title: {
-    fontSize: fontSize.xxl,
+  headerTitle: {
+    fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-    color: colors.primary,
+    color: colors.textPrimary,
+  },
+  menuButton: {
+    padding: spacing.xs,
   },
   content: {
     flex: 1,
   },
-  profileHeader: {
+  scrollContent: {
+    paddingBottom: spacing.xxl,
+  },
+  topSection: {
+    flexDirection: "row",
     alignItems: "center",
-    paddingVertical: spacing.xxl,
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+  },
+  avatarColumn: {
+    alignItems: "center",
+    marginRight: spacing.lg,
+  },
+  avatarContainer: {
+    position: "relative",
+    marginBottom: spacing.xs,
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 86,
+    height: 86,
+    borderRadius: 43,
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  username: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.primary,
-    marginBottom: spacing.xs,
-  },
-  email: {
-    fontSize: fontSize.base,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
+  onlineBadge: {
+    position: "absolute",
+    bottom: 2,
+    right: 2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
   },
   fullName: {
-    fontSize: fontSize.lg,
+    fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  bio: {
-    fontSize: fontSize.base,
-    color: colors.textPrimary,
+    maxWidth: 90,
     textAlign: "center",
-    paddingHorizontal: spacing.xl,
-    marginBottom: spacing.xs,
   },
-  locationContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  location: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  stats: {
+  statsContainer: {
+    flex: 1,
     flexDirection: "row",
     justifyContent: "space-around",
-    paddingVertical: spacing.lg,
-    backgroundColor: colors.white,
-    marginTop: spacing.sm,
+    alignItems: "center",
   },
   statItem: {
     alignItems: "center",
   },
   statValue: {
-    fontSize: fontSize.xxl,
+    fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: colors.primary,
+    color: colors.textPrimary,
   },
   statLabel: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
+    color: colors.textPrimary,
   },
-  statDivider: {
-    width: 1,
-    backgroundColor: colors.border,
+  bioSection: {
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.md,
+  },
+  bio: {
+    fontSize: fontSize.base,
+    color: colors.textPrimary,
+    lineHeight: 20,
+  },
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: spacing.xs,
+    gap: 2,
+  },
+  location: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+  },
+  actionButtons: {
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
   },
   editButton: {
-    margin: spacing.lg,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    borderColor: colors.primary,
+    backgroundColor: colors.background, // Light gray
+    paddingVertical: 8,
+    borderRadius: borderRadius.md,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   editButtonText: {
-    color: colors.primary,
-    fontSize: fontSize.base,
+    color: colors.textPrimary,
+    fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
   },
-  postsSection: {
-    marginTop: spacing.md,
-    backgroundColor: colors.white,
-    padding: spacing.lg,
+  tabContainer: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    marginTop: spacing.sm,
   },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.primary,
-    marginBottom: spacing.md,
+  activeTab: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.textPrimary,
+  },
+  postsGrid: {
+    minHeight: 300,
   },
   emptyState: {
     alignItems: "center",
-    paddingVertical: spacing.xxl,
+    justifyContent: "center",
+    paddingTop: spacing.xxl,
+  },
+  emptyIconContainer: {
+    marginBottom: spacing.sm,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: colors.textPrimary,
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyStateText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-  },
-  emptyStateSubtext: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    color: colors.textPrimary,
   },
 });
