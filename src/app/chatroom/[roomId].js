@@ -30,7 +30,7 @@ export default function ChatroomScreen() {
   const router = useRouter();
   const { roomId } = useLocalSearchParams();
   const user = useAuthStore((state) => state.user);
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   const [room, setRoom] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -95,7 +95,6 @@ export default function ChatroomScreen() {
 
       setIsLoading(false);
 
-      // Check if user is already a participant
       // Check if user is already a participant
       const isParticipant = roomData.participants.some(
         (p) => p.userId.toString() === user._id.toString()
@@ -226,7 +225,7 @@ export default function ChatroomScreen() {
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
-      edges={["top"]}
+      edges={["top", "bottom"]}
     >
       {/* Header */}
       <View
@@ -255,24 +254,25 @@ export default function ChatroomScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Messages */}
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={(item, index) => item._id || index.toString()}
-        contentContainerStyle={styles.messagesList}
-        onContentSizeChange={() =>
-          flatListRef.current?.scrollToEnd({ animated: true })
-        }
-      />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+      >
+        {/* Messages */}
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item, index) => item._id || index.toString()}
+          contentContainerStyle={styles.messagesList}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
+        />
 
-      {/* Input */}
-      {isJoined && (
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-        >
+        {/* Input */}
+        {isJoined && (
           <View
             style={[
               styles.inputContainer,
@@ -313,8 +313,8 @@ export default function ChatroomScreen() {
               />
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
-      )}
+        )}
+      </KeyboardAvoidingView>
 
       {/* Join Modal */}
       <Modal
