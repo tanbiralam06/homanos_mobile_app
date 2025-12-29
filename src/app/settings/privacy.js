@@ -1,8 +1,15 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Switch,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import useAuthStore from "../../store/authStore";
 import {
   colors,
   spacing,
@@ -11,23 +18,11 @@ import {
   borderRadius,
 } from "../../utils/theme";
 
-export default function Settings() {
+export default function PrivacySettings() {
   const router = useRouter();
-  const logout = useAuthStore((state) => state.logout);
+  const [isPrivate, setIsPrivate] = useState(false);
 
-  const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          await logout();
-          router.replace("/auth/login");
-        },
-      },
-    ]);
-  };
+  const toggleSwitch = () => setIsPrivate((previousState) => !previousState);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -36,39 +31,44 @@ export default function Settings() {
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={styles.headerTitle}>Privacy</Text>
         <View style={{ width: 24 }} />
       </View>
 
-      <View style={styles.content}>
-        {/* Account Section */}
+      <ScrollView style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="log-out-outline" size={24} color={colors.error} />
-              <Text style={[styles.menuItemText, { color: colors.error }]}>
-                Logout
+          <Text style={styles.sectionTitle}>Account Privacy</Text>
+          <View style={styles.settingItem}>
+            <View style={styles.settingTextContainer}>
+              <Text style={styles.settingLabel}>Private Account</Text>
+              <Text style={styles.settingDescription}>
+                When your account is private, only people you approve can see
+                your photos and videos. Your existing followers won't be
+                affected.
               </Text>
             </View>
+            <Switch
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor={colors.white}
+              ios_backgroundColor={colors.border}
+              onValueChange={toggleSwitch}
+              value={isPrivate}
+            />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Connections</Text>
+          <TouchableOpacity style={styles.menuItem}>
+            <Text style={styles.menuItemText}>Blocked Accounts</Text>
             <Ionicons
               name="chevron-forward"
               size={20}
               color={colors.textSecondary}
             />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => router.push("/settings/privacy")}
-          >
-            <View style={styles.menuItemLeft}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={24}
-                color={colors.textPrimary}
-              />
-              <Text style={styles.menuItemText}>Privacy</Text>
-            </View>
+          <TouchableOpacity style={styles.menuItem}>
+            <Text style={styles.menuItemText}>Muted Accounts</Text>
             <Ionicons
               name="chevron-forward"
               size={20}
@@ -76,7 +76,7 @@ export default function Settings() {
             />
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -111,8 +111,28 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
     color: colors.textSecondary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
     textTransform: "uppercase",
+  },
+  settingItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  settingTextContainer: {
+    flex: 1,
+    paddingRight: spacing.md,
+  },
+  settingLabel: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  settingDescription: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    lineHeight: 18,
   },
   menuItem: {
     flexDirection: "row",
@@ -121,11 +141,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-  },
-  menuItemLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
   },
   menuItemText: {
     fontSize: fontSize.base,
