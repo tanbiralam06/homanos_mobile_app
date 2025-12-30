@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   StatusBar,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -17,13 +18,8 @@ import {
   toggleFollow,
 } from "../../services/profileService";
 import useAuthStore from "../../store/authStore";
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from "../../utils/theme";
+import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function UserProfile() {
   const { id } = useLocalSearchParams();
@@ -33,6 +29,8 @@ export default function UserProfile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { colors, isDark } = useTheme();
+  const [activeTab, setActiveTab] = useState("moments");
 
   const isOwnProfile = user?._id === id || user?._id === profile?.owner?._id;
 
@@ -63,14 +61,47 @@ export default function UserProfile() {
     try {
       const data = await toggleFollow(id);
       setIsFollowing(data.isFollowing);
+      // Update local follower count pessimistically or fetch again
+      setProfile((prev) => ({
+        ...prev,
+        followersCount: data.isFollowing
+          ? (prev.followersCount || 0) + 1
+          : Math.max((prev.followersCount || 0) - 1, 0),
+      }));
     } catch (error) {
       console.error("Error toggling follow:", error);
     }
   };
 
+  const renderStat = (label, value, route) => (
+    <TouchableOpacity
+      style={[styles.statCard, { backgroundColor: colors.surface }]}
+      onPress={() =>
+        route &&
+        router.push({
+          pathname: route,
+          params: { userId: id },
+        })
+      }
+      disabled={!route}
+    >
+      <Text style={[styles.statValue, { color: colors.primary }]}>
+        {value || 0}
+      </Text>
+      <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View
+        style={[
+          styles.loadingContainer,
+          { backgroundColor: colors.background },
+        ]}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
@@ -78,29 +109,41 @@ export default function UserProfile() {
 
   if (error || !profile) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error || "User not found"}</Text>
+      <View
+        style={[styles.errorContainer, { backgroundColor: colors.background }]}
+      >
+        <Text style={[styles.errorText, { color: colors.error }]}>
+          {error || "User not found"}
+        </Text>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
-          <Text style={styles.backButtonText}>Go Back</Text>
+          <Text style={[styles.backButtonText, { color: colors.primary }]}>
+            Go Back
+          </Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor={colors.background}
+      />
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
           {profile?.owner?.username || "Profile"}
         </Text>
         <View style={{ width: 24 }} />
@@ -111,116 +154,218 @@ export default function UserProfile() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Top Section: Avatar + Stats */}
-        <View style={styles.topSection}>
-          {/* Avatar Column */}
-          <View style={styles.avatarColumn}>
-            <View style={styles.avatarContainer}>
-              <View style={styles.avatar}>
-                <Ionicons name="person" size={50} color={colors.white} />
-              </View>
-            </View>
-            <Text style={styles.fullName} numberOfLines={1}>
-              {profile?.fullName || profile?.owner?.username || "User"}
+        {/* Identity Section */}
+        <View style={styles.identitySection}>
+          <View
+            style={[
+              styles.avatarContainer,
+              { borderColor: colors.primary, backgroundColor: colors.surface },
+            ]}
+          >
+            {profile?.avatar && profile.avatar.length > 0 ? (
+              <Image source={{ uri: profile.avatar }} style={styles.avatar} />
+            ) : (
+              <Ionicons name="person" size={60} color={colors.textSecondary} />
+            )}
+          </View>
+
+          <Text style={[styles.fullName, { color: colors.textPrimary }]}>
+            {profile?.fullName || profile?.owner?.username || "Traveler"}
+          </Text>
+          <Text style={[styles.username, { color: colors.textSecondary }]}>
+            @{profile?.owner?.username || "username"}
+          </Text>
+
+          {profile?.bio && (
+            <Text style={[styles.bio, { color: colors.textPrimary }]}>
+              {profile.bio}
             </Text>
-          </View>
-
-          {/* Stats Column */}
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>0</Text>
-              <Text style={styles.statLabel}>Posts</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.statItem}
-              onPress={() =>
-                router.push({
-                  pathname: "/user/followers",
-                  params: { userId: id },
-                })
-              }
-            >
-              <Text style={styles.statValue}>
-                {profile?.followersCount || 0}
-              </Text>
-              <Text style={styles.statLabel}>Followers</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.statItem}
-              onPress={() =>
-                router.push({
-                  pathname: "/user/following",
-                  params: { userId: id },
-                })
-              }
-            >
-              <Text style={styles.statValue}>
-                {profile?.followingCount || 0}
-              </Text>
-              <Text style={styles.statLabel}>Following</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Bio Section */}
-        <View style={styles.bioSection}>
-          {profile?.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          {isOwnProfile ? (
-            <TouchableOpacity
-              style={[styles.followButton, styles.editButton]}
-              onPress={() => router.push("/settings/account")}
-            >
-              <Text style={styles.followButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
-          ) : (
-            <>
-              <TouchableOpacity
-                style={[
-                  styles.followButton,
-                  isFollowing && styles.followingButton,
-                ]}
-                onPress={handleFollowToggle}
-              >
-                <Text
-                  style={[
-                    styles.followButtonText,
-                    isFollowing && styles.followingButtonText,
-                  ]}
-                >
-                  {isFollowing ? "Following" : "Follow"}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.messageButton}>
-                <Text style={styles.messageButtonText}>Message</Text>
-              </TouchableOpacity>
-            </>
           )}
-        </View>
-        {/* Content Tabs */}
-        <View style={styles.tabContainer}>
-          <View style={styles.activeTab}>
-            <Ionicons name="grid" size={24} color={colors.textPrimary} />
-          </View>
-        </View>
 
-        {/* Posts Grid */}
-        <View style={styles.postsGrid}>
-          {/* Empty State */}
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIconContainer}>
+          {profile?.locationName ? (
+            <View style={styles.locationContainer}>
               <Ionicons
-                name="camera-outline"
-                size={40}
+                name="location-sharp"
+                size={16}
                 color={colors.textSecondary}
               />
+              <Text
+                style={[styles.locationText, { color: colors.textSecondary }]}
+              >
+                {profile.locationName}
+              </Text>
             </View>
-            <Text style={styles.emptyStateText}>No posts yet</Text>
+          ) : null}
+
+          {/* Social Stats */}
+          <View style={styles.statsRow}>
+            {renderStat(
+              "Followers",
+              profile?.followersCount,
+              "/user/followers"
+            )}
+            {renderStat(
+              "Following",
+              profile?.followingCount,
+              "/user/following"
+            )}
+            {renderStat("Posts", 0)}
           </View>
+
+          {/* Action Buttons */}
+          <View style={styles.actionRow}>
+            {isOwnProfile ? (
+              <TouchableOpacity
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: colors.primary },
+                ]}
+                onPress={() => router.push("/profile/edit")}
+              >
+                <Text
+                  style={[styles.actionButtonText, { color: colors.white }]}
+                >
+                  Edit Profile
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={[
+                    styles.actionButton,
+                    isFollowing
+                      ? {
+                          backgroundColor: "transparent",
+                          borderWidth: 1,
+                          borderColor: colors.border,
+                        }
+                      : { backgroundColor: colors.primary },
+                  ]}
+                  onPress={handleFollowToggle}
+                >
+                  <Text
+                    style={[
+                      styles.actionButtonText,
+                      {
+                        color: isFollowing ? colors.textPrimary : colors.white,
+                      },
+                    ]}
+                  >
+                    {isFollowing ? "Following" : "Follow"}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.actionButton,
+                    styles.outlineButton,
+                    { borderColor: colors.border },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.actionButtonText,
+                      { color: colors.textPrimary },
+                    ]}
+                  >
+                    Message
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+
+        {/* Content Tabs */}
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity
+            style={[
+              styles.tab,
+              activeTab === "moments" && {
+                backgroundColor: colors.primary + "15",
+              },
+            ]}
+            onPress={() => setActiveTab("moments")}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                {
+                  color:
+                    activeTab === "moments"
+                      ? colors.primary
+                      : colors.textSecondary,
+                  fontWeight:
+                    activeTab === "moments"
+                      ? fontWeight.bold
+                      : fontWeight.medium,
+                },
+              ]}
+            >
+              Moments
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.tab,
+              activeTab === "about" && {
+                backgroundColor: colors.primary + "15",
+              },
+            ]}
+            onPress={() => setActiveTab("about")}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                {
+                  color:
+                    activeTab === "about"
+                      ? colors.primary
+                      : colors.textSecondary,
+                  fontWeight:
+                    activeTab === "about" ? fontWeight.bold : fontWeight.medium,
+                },
+              ]}
+            >
+              About
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Tab Content */}
+        <View style={styles.tabContent}>
+          {activeTab === "moments" ? (
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="images-outline"
+                size={48}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={[styles.emptyStateText, { color: colors.textSecondary }]}
+              >
+                No moments shared yet.
+              </Text>
+            </View>
+          ) : (
+            <View
+              style={[styles.infoCard, { backgroundColor: colors.surface }]}
+            >
+              <View style={styles.infoRow}>
+                <Ionicons
+                  name="calendar-outline"
+                  size={20}
+                  color={colors.textSecondary}
+                />
+                <Text
+                  style={[styles.infoText, { color: colors.textSecondary }]}
+                >
+                  Joined{" "}
+                  {new Date(profile?.createdAt || Date.now()).getFullYear()}
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -230,7 +375,6 @@ export default function UserProfile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
   },
   loadingContainer: {
     flex: 1,
@@ -245,7 +389,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: fontSize.lg,
-    color: colors.error,
     marginBottom: spacing.md,
   },
   backButton: {
@@ -255,20 +398,17 @@ const styles = StyleSheet.create({
   backButtonText: {
     marginLeft: spacing.sm,
     fontSize: fontSize.base,
-    color: colors.primary,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.white,
+    paddingVertical: spacing.md,
   },
   headerTitle: {
-    fontSize: fontSize.xl,
+    fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
   },
   content: {
     flex: 1,
@@ -276,146 +416,136 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: spacing.xxl,
   },
-  topSection: {
-    flexDirection: "row",
+  identitySection: {
     alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    marginTop: spacing.sm,
-  },
-  avatarColumn: {
-    alignItems: "center",
-    marginRight: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
   },
   avatarContainer: {
-    position: "relative",
-    marginBottom: spacing.xs,
-  },
-  avatar: {
-    width: 86,
-    height: 86,
-    borderRadius: 43,
-    backgroundColor: colors.primary,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: colors.border,
+    marginBottom: spacing.md,
+    position: "relative",
+  },
+  avatar: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 60,
   },
   fullName: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.textPrimary,
-    maxWidth: 90,
+    fontSize: fontSize.xxl,
+    fontWeight: fontWeight.bold,
     textAlign: "center",
   },
-  statsContainer: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  statItem: {
-    alignItems: "center",
-  },
-  statValue: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
-  },
-  statLabel: {
-    fontSize: fontSize.sm,
-    color: colors.textPrimary,
-  },
-  bioSection: {
-    paddingHorizontal: spacing.lg,
-    marginTop: spacing.md,
+  username: {
+    fontSize: fontSize.md,
+    marginTop: 2,
+    marginBottom: spacing.md,
   },
   bio: {
+    textAlign: "center",
     fontSize: fontSize.base,
-    color: colors.textPrimary,
-    lineHeight: 20,
+    lineHeight: 22,
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xl,
   },
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: spacing.xs,
-    gap: 2,
+    justifyContent: "center",
+    marginBottom: spacing.lg,
+    gap: 4,
   },
-  location: {
+  locationText: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
   },
-  actionButtons: {
+  statsRow: {
     flexDirection: "row",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    justifyContent: "center",
     gap: spacing.md,
+    marginBottom: spacing.xl,
+    width: "100%",
   },
-  followButton: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    paddingVertical: 10,
-    borderRadius: borderRadius.md,
-    alignItems: "center",
-  },
-  followingButton: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  followButtonText: {
-    color: colors.white,
-    fontWeight: fontWeight.semibold,
-    fontSize: fontSize.sm,
-  },
-  followingButtonText: {
-    color: colors.textPrimary,
-  },
-  messageButton: {
-    flex: 1,
-    backgroundColor: "#EFEFEF",
-    paddingVertical: 10,
-    borderRadius: borderRadius.md,
-    alignItems: "center",
-  },
-  messageButtonText: {
-    color: colors.textPrimary,
-    fontWeight: fontWeight.semibold,
-    fontSize: fontSize.sm,
-  },
-  tabContainer: {
-    flexDirection: "row",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    gap: spacing.md,
-  },
-  activeTab: {
-    flex: 1,
+  statCard: {
     alignItems: "center",
     paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.textPrimary,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.lg,
+    minWidth: 90,
   },
-  postsGrid: {
-    minHeight: 300,
+  statValue: {
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
+  },
+  statLabel: {
+    fontSize: fontSize.xs,
+    marginTop: 2,
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+    width: "100%",
+    justifyContent: "center",
+  },
+  actionButton: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 30, // Pill shape
+    minWidth: 140,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionButtonText: {
+    fontWeight: fontWeight.bold,
+    fontSize: fontSize.base,
+  },
+  outlineButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    paddingHorizontal: spacing.xl,
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+    justifyContent: "center",
+  },
+  tab: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 20,
+  },
+  tabText: {
+    fontSize: fontSize.base,
+  },
+  tabContent: {
+    paddingHorizontal: spacing.lg,
   },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: spacing.xxl,
-  },
-  emptyIconContainer: {
-    marginBottom: spacing.sm,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: colors.textPrimary,
-    alignItems: "center",
-    justifyContent: "center",
+    paddingVertical: spacing.xxl,
+    gap: spacing.md,
   },
   emptyStateText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
+    fontSize: fontSize.md,
+  },
+  infoCard: {
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    gap: spacing.md,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  infoText: {
+    fontSize: fontSize.base,
   },
 });
