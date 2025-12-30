@@ -18,12 +18,14 @@ import {
   fontWeight,
   borderRadius,
 } from "../../utils/theme";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function FollowingList() {
   const { userId } = useLocalSearchParams();
   const router = useRouter();
   const [following, setFollowing] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { colors } = useTheme();
 
   useEffect(() => {
     const fetchFollowing = async () => {
@@ -44,7 +46,10 @@ export default function FollowingList() {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.userItem}
+      style={[
+        styles.userItem,
+        { borderBottomColor: colors.border, backgroundColor: colors.surface },
+      ]}
       onPress={() => router.push(`/user/${item._id}`)}
     >
       <View style={styles.userInfo}>
@@ -52,24 +57,37 @@ export default function FollowingList() {
           <Ionicons name="person" size={24} color={colors.white} />
         </View>
         <View style={styles.userDetails}>
-          <Text style={styles.fullName}>{item.fullName || "User"}</Text>
-          <Text style={styles.username}>@{item.username}</Text>
+          <Text style={[styles.fullName, { color: colors.textPrimary }]}>
+            {item.fullName || "User"}
+          </Text>
+          <Text style={[styles.username, { color: colors.textSecondary }]}>
+            @{item.username}
+          </Text>
         </View>
       </View>
-      <TouchableOpacity style={styles.messageButton}>
-        <Text style={styles.messageButtonText}>Message</Text>
+      <TouchableOpacity
+        style={[styles.messageButton, { backgroundColor: colors.border }]}
+      >
+        <Text style={[styles.messageButtonText, { color: colors.textPrimary }]}>
+          Message
+        </Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Following</Text>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+          Following
+        </Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -85,7 +103,9 @@ export default function FollowingList() {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Not following anyone yet</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                Not following anyone yet
+              </Text>
             </View>
           }
         />

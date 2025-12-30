@@ -23,6 +23,7 @@ import {
   borderRadius,
 } from "../../utils/theme";
 import useAuthStore from "../../store/authStore";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function FollowersList() {
   const { userId } = useLocalSearchParams();
@@ -31,6 +32,7 @@ export default function FollowersList() {
   const [loading, setLoading] = useState(true);
   const currentUser = useAuthStore((state) => state.user);
   const isMyProfile = currentUser?._id === userId;
+  const { colors } = useTheme();
 
   useEffect(() => {
     fetchFollowers();
@@ -74,7 +76,10 @@ export default function FollowersList() {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.userItem}
+      style={[
+        styles.userItem,
+        { borderBottomColor: colors.border, backgroundColor: colors.surface },
+      ]}
       onPress={() => router.push(`/user/${item._id}`)}
     >
       <View style={styles.userInfo}>
@@ -82,8 +87,12 @@ export default function FollowersList() {
           <Ionicons name="person" size={24} color={colors.white} />
         </View>
         <View style={styles.userDetails}>
-          <Text style={styles.fullName}>{item.fullName || "User"}</Text>
-          <Text style={styles.username}>@{item.username}</Text>
+          <Text style={[styles.fullName, { color: colors.textPrimary }]}>
+            {item.fullName || "User"}
+          </Text>
+          <Text style={[styles.username, { color: colors.textSecondary }]}>
+            @{item.username}
+          </Text>
         </View>
       </View>
       {isMyProfile && (
@@ -98,13 +107,18 @@ export default function FollowersList() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Followers</Text>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+          Followers
+        </Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -120,7 +134,9 @@ export default function FollowersList() {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No followers yet</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                No followers yet
+              </Text>
             </View>
           }
         />
