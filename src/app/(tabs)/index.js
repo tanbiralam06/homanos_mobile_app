@@ -5,7 +5,8 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  ActivityIndicator,
+  StatusBar,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
@@ -16,12 +17,54 @@ import useChatroomStore from "../../store/chatroomStore";
 import { useTheme } from "../../context/ThemeContext";
 import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
+// Components
+import ChatroomCard from "../../components/ChatroomCard";
+import UserAvatar from "../../components/UserAvatar";
+import SectionHeader from "../../components/SectionHeader";
+
 export default function Home() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const { chatrooms, fetchChatrooms, isLoading } = useChatroomStore();
   const [refreshing, setRefreshing] = useState(false);
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+
+  // Mock data for stories/online users
+  const onlineUsers = [
+    { _id: "1", username: "alex_dev", avatar: null },
+    { _id: "2", username: "sarah_ui", avatar: null },
+    { _id: "3", username: "mike_js", avatar: null },
+    { _id: "4", username: "emma_ux", avatar: null },
+    { _id: "5", username: "david_native", avatar: null },
+  ];
+
+  // Mock data for activity feed
+  const activities = [
+    {
+      id: "1",
+      user: "Sarah UI",
+      action: "created a new room",
+      target: "Design Systems 101",
+      time: "2m ago",
+      icon: "add-circle-outline",
+    },
+    {
+      id: "2",
+      user: "Alex Dev",
+      action: "joined",
+      target: "React Native Performance",
+      time: "15m ago",
+      icon: "enter-outline",
+    },
+    {
+      id: "3",
+      user: "Mike JS",
+      action: "is asking about",
+      target: "Expo Router v3",
+      time: "1h ago",
+      icon: "help-circle-outline",
+    },
+  ];
 
   useEffect(() => {
     fetchChatrooms();
@@ -33,64 +76,51 @@ export default function Home() {
     setRefreshing(false);
   };
 
-  const renderChatroomCard = (room) => (
-    <TouchableOpacity
-      key={room._id}
-      style={[
-        styles.chatroomCard,
-        { backgroundColor: colors.surface, borderColor: colors.border },
-      ]}
-      onPress={() => router.push(`/chatroom/${room._id}`)}
-    >
-      <View
-        style={[styles.chatroomIcon, { backgroundColor: colors.secondary }]}
-      >
-        <Ionicons name="chatbubbles" size={24} color={colors.white} />
-      </View>
-      <View style={styles.chatroomContent}>
-        <Text style={[styles.chatroomName, { color: colors.textPrimary }]}>
-          {room.name}
-        </Text>
-        <Text style={[styles.chatroomTopic, { color: colors.textSecondary }]}>
-          {room.topic}
-        </Text>
-        <View style={styles.chatroomMeta}>
-          <Ionicons name="people" size={14} color={colors.textSecondary} />
-          <Text
-            style={[styles.chatroomMetaText, { color: colors.textSecondary }]}
-          >
-            {room.participantCount || 0} people
-          </Text>
-        </View>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-    </TouchableOpacity>
-  );
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  const formattedDate = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={["top"]}
     >
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+
       {/* Header */}
-      <View
-        style={[
-          styles.header,
-          { backgroundColor: colors.surface, borderBottomColor: colors.border },
-        ]}
-      >
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <View>
-          <Text style={[styles.logo, { color: colors.primary }]}>Human OS</Text>
-          <Text style={[styles.tagline, { color: colors.textSecondary }]}>
-            Real life first.
+          <Text style={[styles.greeting, { color: colors.textSecondary }]}>
+            {getGreeting()},
+          </Text>
+          <Text style={[styles.username, { color: colors.textPrimary }]}>
+            {user?.username || "Traveler"}
+          </Text>
+          <Text style={[styles.date, { color: colors.textSecondary }]}>
+            {formattedDate}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => router.push("/create-room")}>
-          <Ionicons name="add-circle" size={32} color={colors.primary} />
+        <TouchableOpacity
+          onPress={() => router.push("/profile")}
+          style={[styles.profileButton, { borderColor: colors.border }]}
+        >
+          {user?.avatar ? (
+            <Image source={{ uri: user.avatar }} style={styles.profileImage} />
+          ) : (
+            <Ionicons name="person" size={24} color={colors.textSecondary} />
+          )}
         </TouchableOpacity>
       </View>
 
-      {/* Content */}
       <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
@@ -102,85 +132,111 @@ export default function Home() {
           />
         }
       >
-        {/* Welcome Card */}
-        <View
-          style={[
-            styles.welcomeCard,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
-        >
-          <Text style={[styles.welcomeTitle, { color: colors.primary }]}>
-            Welcome, {user?.username || "User"}!
-          </Text>
-          <Text style={[styles.welcomeText, { color: colors.textSecondary }]}>
-            Join a chat room or create your own to connect with people
-          </Text>
+        {/* Stories / Online Users */}
+        <View style={styles.section}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.storiesContent}
+          >
+            <UserAvatar isOwnProfile user={user} onPress={() => {}} />
+            {onlineUsers.map((u) => (
+              <UserAvatar key={u._id} user={u} onPress={() => {}} />
+            ))}
+          </ScrollView>
         </View>
 
-        {/* Trending Rooms */}
+        {/* Happening Now (Active Chatrooms) */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-              🔥 Active Rooms
-            </Text>
-            {chatrooms.length > 0 && (
-              <Text
-                style={[
-                  styles.sectionCount,
-                  {
-                    color: colors.textSecondary,
-                    backgroundColor: colors.background,
-                  },
-                ]}
-              >
-                {chatrooms.length}
-              </Text>
-            )}
-          </View>
-
-          {isLoading && !refreshing ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={colors.primary} />
-            </View>
-          ) : chatrooms.length > 0 ? (
-            chatrooms.map(renderChatroomCard)
+          <SectionHeader
+            title="Happening Now"
+            actionText="See All"
+            onActionDiff={() => router.push("/discovery")}
+          />
+          {chatrooms.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalList}
+              snapToInterval={300} // Approximate width of card + margin
+              decelerationRate="fast"
+            >
+              {chatrooms.slice(0, 5).map((room) => (
+                <View
+                  key={room._id}
+                  style={{ width: 280, marginRight: spacing.md }}
+                >
+                  <ChatroomCard room={room} />
+                </View>
+              ))}
+            </ScrollView>
           ) : (
             <View style={styles.emptyState}>
-              <Ionicons
-                name="chatbubbles-outline"
-                size={48}
-                color={colors.border}
-              />
-              <Text
-                style={[styles.emptyStateText, { color: colors.textSecondary }]}
-              >
-                No active rooms
+              <Text style={{ color: colors.textSecondary }}>
+                No active rooms yet.
               </Text>
-              <Text
-                style={[
-                  styles.emptyStateSubtext,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                Be the first to create one!
-              </Text>
-              <TouchableOpacity
-                style={[
-                  styles.createButton,
-                  { backgroundColor: colors.primary },
-                ]}
-                onPress={() => router.push("/create-room")}
-              >
-                <Text
-                  style={[styles.createButtonText, { color: colors.white }]}
-                >
-                  Create Room
-                </Text>
-              </TouchableOpacity>
             </View>
           )}
         </View>
+
+        {/* Activity Feed */}
+        <View style={styles.section}>
+          <SectionHeader title="Your Feed" />
+          <View style={styles.feedList}>
+            {activities.map((activity) => (
+              <View
+                key={activity.id}
+                style={[
+                  styles.feedItem,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.feedIcon,
+                    { backgroundColor: colors.background },
+                  ]}
+                >
+                  <Ionicons
+                    name={activity.icon}
+                    size={20}
+                    color={colors.primary}
+                  />
+                </View>
+                <View style={styles.feedContent}>
+                  <Text
+                    style={[styles.feedText, { color: colors.textPrimary }]}
+                  >
+                    <Text style={{ fontWeight: "bold" }}>{activity.user}</Text>{" "}
+                    {activity.action}{" "}
+                    <Text style={{ fontWeight: "bold" }}>
+                      {activity.target}
+                    </Text>
+                  </Text>
+                  <Text
+                    style={[styles.feedTime, { color: colors.textSecondary }]}
+                  >
+                    {activity.time}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={{ height: 80 }} />
       </ScrollView>
+
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: colors.primary }]}
+        onPress={() => router.push("/create-room")}
+      >
+        <Ionicons name="add" size={32} color={colors.white} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -193,120 +249,95 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing.sm,
   },
-  logo: {
+  greeting: {
+    fontSize: fontSize.md,
+  },
+  username: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
   },
-  tagline: {
-    fontSize: fontSize.sm,
-    marginTop: spacing.xs / 2,
+  date: {
+    fontSize: fontSize.xs,
+    marginTop: spacing.xs,
+  },
+  profileButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  profileImage: {
+    width: "100%",
+    height: "100%",
   },
   content: {
     flex: 1,
   },
-  welcomeCard: {
-    margin: spacing.lg,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-  },
-  welcomeTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    marginBottom: spacing.sm,
-  },
-  welcomeText: {
-    fontSize: fontSize.base,
-    lineHeight: 22,
-  },
   section: {
-    marginBottom: spacing.lg,
+    marginTop: spacing.xl,
   },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.md,
+  storiesContent: {
+    paddingHorizontal: spacing.xl,
   },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
+  horizontalList: {
+    paddingHorizontal: spacing.xl,
   },
-  sectionCount: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs / 2,
-    borderRadius: borderRadius.sm,
+  emptyState: {
+    paddingHorizontal: spacing.xl,
   },
-  chatroomCard: {
+  feedList: {
+    paddingHorizontal: spacing.xl,
+  },
+  feedItem: {
     flexDirection: "row",
     alignItems: "center",
     padding: spacing.md,
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.sm,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
+    marginBottom: spacing.sm,
   },
-  chatroomIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
+  feedIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
     marginRight: spacing.md,
   },
-  chatroomContent: {
+  feedContent: {
     flex: 1,
   },
-  chatroomName: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    marginBottom: spacing.xs / 2,
-  },
-  chatroomTopic: {
+  feedText: {
     fontSize: fontSize.sm,
-    marginBottom: spacing.xs,
+    lineHeight: 20,
   },
-  chatroomMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs / 2,
-  },
-  chatroomMetaText: {
+  feedTime: {
     fontSize: fontSize.xs,
+    marginTop: spacing.xs / 2,
   },
-  loadingContainer: {
-    paddingVertical: spacing.xxl,
+  fab: {
+    position: "absolute",
+    bottom: spacing.lg,
+    right: spacing.lg,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: "center",
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: spacing.xxl,
-    paddingHorizontal: spacing.xl,
-  },
-  emptyStateText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    marginTop: spacing.md,
-  },
-  emptyStateSubtext: {
-    fontSize: fontSize.base,
-    marginTop: spacing.xs,
-    marginBottom: spacing.lg,
-  },
-  createButton: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.lg,
-  },
-  createButtonText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
 });

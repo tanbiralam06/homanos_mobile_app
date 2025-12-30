@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { createChatroom } from "../../services/chatroomService";
+import useChatroomStore from "../../store/chatroomStore";
 import { useTheme } from "../../context/ThemeContext";
 import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
@@ -22,11 +22,13 @@ export default function CreateRoom() {
   const router = useRouter();
   const { colors } = useTheme();
 
+  // Use store for creation
+  const { createChatroom, isLoading: isStoreLoading } = useChatroomStore();
+
   const [name, setName] = useState("");
   const [topic, setTopic] = useState("");
   const [description, setDescription] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("50");
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleCreate = async () => {
     if (!name.trim() || !topic.trim()) {
@@ -34,22 +36,19 @@ export default function CreateRoom() {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const newRoom = await createChatroom({
-        name: name.trim(),
-        topic: topic.trim(),
-        description: description.trim(),
-        maxParticipants: parseInt(maxParticipants) || 50,
-      });
+    // Call store action
+    const newRoom = await createChatroom(
+      name.trim(),
+      topic.trim(),
+      description.trim()
+    );
 
+    if (newRoom) {
       Alert.alert("Success", "Chatroom created successfully");
       router.replace(`/chatroom/${newRoom._id}`);
-    } catch (error) {
-      console.error("Create room error:", error);
+    } else {
+      // Store handles error state, but we can show alert too
       Alert.alert("Error", "Failed to create chatroom");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -163,12 +162,12 @@ export default function CreateRoom() {
             style={[
               styles.createButton,
               { backgroundColor: colors.primary },
-              isLoading && { opacity: 0.7 },
+              isStoreLoading && { opacity: 0.7 },
             ]}
             onPress={handleCreate}
-            disabled={isLoading}
+            disabled={isStoreLoading}
           >
-            {isLoading ? (
+            {isStoreLoading ? (
               <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={[styles.createButtonText, { color: colors.white }]}>
