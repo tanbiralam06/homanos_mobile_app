@@ -107,6 +107,10 @@ class SocketService {
   isConnected() {
     return this.socket && this.socket.connected;
   }
+
+  getSocket() {
+    return this.socket;
+  }
 }
 
 export default new SocketService();
