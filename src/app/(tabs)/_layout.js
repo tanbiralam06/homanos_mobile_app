@@ -1,8 +1,11 @@
+import { View, Text, StyleSheet } from "react-native";
+import { useEffect } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { withLayoutContext } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../../context/ThemeContext";
+import useNotificationStore from "../../store/notificationStore";
 
 const { Navigator } = createMaterialTopTabNavigator();
 const MaterialTopTabs = withLayoutContext(Navigator);
@@ -10,6 +13,12 @@ const MaterialTopTabs = withLayoutContext(Navigator);
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { unreadCount, fetchNotifications } = useNotificationStore();
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
   return (
     <MaterialTopTabs
       initialRouteName="index"
@@ -78,7 +87,37 @@ export default function TabsLayout() {
         options={{
           title: "Notifications",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="notifications" size={26} color={color} />
+            <View>
+              <Ionicons name="notifications" size={26} color={color} />
+              {unreadCount > 0 && (
+                <View
+                  style={{
+                    position: "absolute",
+                    right: -6,
+                    top: -3,
+                    backgroundColor: colors.error,
+                    borderRadius: 10,
+                    minWidth: 18,
+                    height: 18,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingHorizontal: 2,
+                    borderWidth: 2,
+                    borderColor: colors.surface,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 10,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </View>
           ),
         }}
       />
