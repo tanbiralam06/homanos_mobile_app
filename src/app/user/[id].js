@@ -131,35 +131,40 @@ export default function UserProfile() {
               <Text style={styles.statValue}>0</Text>
               <Text style={styles.statLabel}>Posts</Text>
             </View>
-            <View style={styles.statItem}>
+            <TouchableOpacity
+              style={styles.statItem}
+              onPress={() =>
+                router.push({
+                  pathname: "/user/followers",
+                  params: { userId: id },
+                })
+              }
+            >
               <Text style={styles.statValue}>
                 {profile?.followersCount || 0}
               </Text>
               <Text style={styles.statLabel}>Followers</Text>
-            </View>
-            <View style={styles.statItem}>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.statItem}
+              onPress={() =>
+                router.push({
+                  pathname: "/user/following",
+                  params: { userId: id },
+                })
+              }
+            >
               <Text style={styles.statValue}>
                 {profile?.followingCount || 0}
               </Text>
               <Text style={styles.statLabel}>Following</Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Bio Section */}
         <View style={styles.bioSection}>
           {profile?.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
-
-          {profile?.location ? (
-            <View style={styles.locationContainer}>
-              <Ionicons
-                name="location-outline"
-                size={14}
-                color={colors.textSecondary}
-              />
-              <Text style={styles.location}>{profile.location}</Text>
-            </View>
-          ) : null}
         </View>
 
         {/* Action Buttons */}

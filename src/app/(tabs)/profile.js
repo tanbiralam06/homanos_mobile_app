@@ -150,19 +150,6 @@ export default function Profile() {
               {profile.bio}
             </Text>
           ) : null}
-
-          {profile?.location ? (
-            <View style={styles.locationContainer}>
-              <Ionicons
-                name="location-outline"
-                size={14}
-                color={colors.textSecondary}
-              />
-              <Text style={[styles.location, { color: colors.textSecondary }]}>
-                {profile.location}
-              </Text>
-            </View>
-          ) : null}
         </View>
 
         {/* Action Buttons */}

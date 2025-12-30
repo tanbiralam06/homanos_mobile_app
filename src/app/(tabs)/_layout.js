@@ -47,6 +47,15 @@ export default function TabsLayout() {
         }}
       />
       <MaterialTopTabs.Screen
+        name="discovery"
+        options={{
+          title: "Discovery",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="compass" size={26} color={color} />
+          ),
+        }}
+      />
+      <MaterialTopTabs.Screen
         name="search"
         options={{
           title: "Search",

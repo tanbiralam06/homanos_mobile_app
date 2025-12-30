@@ -39,3 +39,15 @@ export const removeFollower = async (followerId) => {
   const response = await api.delete(`/follows/r/${followerId}`);
   return response.data;
 };
+
+export const updateLocation = async (data) => {
+  const response = await api.patch("/profile/location", data);
+  return response.data.data;
+};
+
+export const getNearbyProfiles = async ({ lat, long, radius }) => {
+  const response = await api.get("/profile/nearby", {
+    params: { lat, long, radius },
+  });
+  return response.data.data;
+};

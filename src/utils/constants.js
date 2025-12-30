@@ -2,7 +2,11 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 
 const getBaseUrl = () => {
+  // Hardcoded for stability during debugging
+  return "http://10.173.177.38:8000/api/v1";
+
   // If running in Expo Go (physical device), hostUri contains the computer's IP
+  /*
   const debuggerHost = Constants.expoConfig?.hostUri;
   const localhost = debuggerHost?.split(":")[0];
 
@@ -17,6 +21,7 @@ const getBaseUrl = () => {
 
   // Fallback for iOS Simulator / Web
   return "http://localhost:8000/api/v1";
+  */
 };
 
 export const API_BASE_URL = getBaseUrl();
