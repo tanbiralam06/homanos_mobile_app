@@ -5,23 +5,23 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  Alert,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useFocusEffect } from "expo-router";
 import useAuthStore from "../../store/authStore";
 import useProfileStore from "../../store/profileStore";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
 export default function Profile() {
   const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
   const { profile, fetchProfile } = useProfileStore();
   const router = useRouter();
   const { colors, isDark } = useTheme();
+  const [activeTab, setActiveTab] = useState("moments");
 
   useFocusEffect(
     useCallback(() => {
@@ -33,179 +33,256 @@ export default function Profile() {
     router.push("/settings");
   };
 
+  const renderStat = (label, value, route) => (
+    <TouchableOpacity
+      style={[styles.statCard, { backgroundColor: colors.surface }]}
+      onPress={() =>
+        route &&
+        router.push({
+          pathname: route,
+          params: { userId: user?._id || profile?.owner?._id },
+        })
+      }
+    >
+      <Text style={[styles.statValue, { color: colors.primary }]}>
+        {value || 0}
+      </Text>
+      <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.white }]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={["top"]}
     >
       <StatusBar
         barStyle={isDark ? "light-content" : "dark-content"}
-        backgroundColor={colors.surface}
+        backgroundColor={colors.background}
       />
 
       {/* Header */}
-      <View
-        style={[
-          styles.header,
-          { backgroundColor: colors.surface }, // Removed border color
-        ]}
-      >
+      <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-          {user?.username || profile?.owner?.username || "username"}
+          My Identity
         </Text>
         <TouchableOpacity onPress={handleMenuPress} style={styles.menuButton}>
-          <Ionicons name="menu-outline" size={28} color={colors.textPrimary} />
+          <Ionicons
+            name="settings-outline"
+            size={24}
+            color={colors.textPrimary}
+          />
         </TouchableOpacity>
       </View>
 
       <ScrollView
-        style={[styles.content, { backgroundColor: colors.background }]}
+        style={styles.content}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Top Section: Avatar + Stats */}
-        <View style={styles.topSection}>
-          {/* Avatar Column */}
-          <View style={styles.avatarColumn}>
-            <View style={styles.avatarContainer}>
-              <View
-                style={[
-                  styles.avatar,
-                  {
-                    backgroundColor: colors.primary,
-                    borderColor: colors.border,
-                  },
-                ]}
-              >
-                <Ionicons name="person" size={50} color={colors.white} />
-              </View>
-              {/* Online badge logic (optional) */}
-              <View
-                style={[styles.onlineBadge, { backgroundColor: colors.white }]}
-              />
-            </View>
-            <Text
-              style={[styles.fullName, { color: colors.textPrimary }]}
-              numberOfLines={1}
-            >
-              {profile?.fullName || user?.username || "New User"}
-            </Text>
-          </View>
-
-          {/* Stats */}
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.textPrimary }]}>
-                0
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textPrimary }]}>
-                Posts
-              </Text>
-            </View>
-            <View
-              style={[styles.statDivider, { backgroundColor: colors.border }]}
-            />
+        {/* Identity Section */}
+        <View style={styles.identitySection}>
+          <View
+            style={[
+              styles.avatarContainer,
+              { borderColor: colors.primary, backgroundColor: colors.surface },
+            ]}
+          >
+            {profile?.avatar && profile.avatar.length > 0 ? (
+              <Image source={{ uri: profile.avatar }} style={styles.avatar} />
+            ) : (
+              <Ionicons name="person" size={60} color={colors.textSecondary} />
+            )}
             <TouchableOpacity
-              style={styles.statItem}
-              onPress={() =>
-                router.push({
-                  pathname: "/user/followers",
-                  params: { userId: user?._id || profile?.owner?._id },
-                })
-              }
+              style={[
+                styles.editAvatarBadge,
+                { backgroundColor: colors.primary },
+              ]}
+              onPress={() => router.push("/profile/edit")}
             >
-              <Text style={[styles.statValue, { color: colors.textPrimary }]}>
-                {profile?.followersCount || 0}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textPrimary }]}>
-                Followers
-              </Text>
-            </TouchableOpacity>
-            <View
-              style={[styles.statDivider, { backgroundColor: colors.border }]}
-            />
-            <TouchableOpacity
-              style={styles.statItem}
-              onPress={() =>
-                router.push({
-                  pathname: "/user/following",
-                  params: { userId: user?._id || profile?.owner?._id },
-                })
-              }
-            >
-              <Text style={[styles.statValue, { color: colors.textPrimary }]}>
-                {profile?.followingCount || 0}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textPrimary }]}>
-                Following
-              </Text>
+              <Ionicons name="pencil" size={14} color={colors.white} />
             </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Bio Section */}
-        <View style={styles.bioSection}>
-          {profile?.bio ? (
+          <Text style={[styles.fullName, { color: colors.textPrimary }]}>
+            {profile?.fullName || user?.username || "Traveler"}
+          </Text>
+          <Text style={[styles.username, { color: colors.textSecondary }]}>
+            @{user?.username || "username"}
+          </Text>
+
+          {profile?.bio && (
             <Text style={[styles.bio, { color: colors.textPrimary }]}>
               {profile.bio}
             </Text>
+          )}
+
+          {profile?.locationName ? (
+            <View style={styles.locationContainer}>
+              <Ionicons
+                name="location-sharp"
+                size={16}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={[styles.locationText, { color: colors.textSecondary }]}
+              >
+                {profile.locationName}
+              </Text>
+            </View>
           ) : null}
+
+          {/* Social Stats */}
+          <View style={styles.statsRow}>
+            {renderStat(
+              "Followers",
+              profile?.followersCount,
+              "/user/followers"
+            )}
+            {renderStat(
+              "Following",
+              profile?.followingCount,
+              "/user/following"
+            )}
+            {renderStat("Posts", 0)}
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: colors.primary }]}
+              onPress={() => router.push("/profile/edit")}
+            >
+              <Text style={[styles.actionButtonText, { color: colors.white }]}>
+                Edit Profile
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                styles.outlineButton,
+                { borderColor: colors.border },
+              ]}
+              onPress={() => {}}
+            >
+              <Text
+                style={[
+                  styles.actionButtonText,
+                  styles.outlineButtonText,
+                  { color: colors.textPrimary },
+                ]}
+              >
+                Share
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
+        {/* Content Tabs */}
+        <View style={styles.tabsContainer}>
           <TouchableOpacity
             style={[
-              styles.editButton,
-              {
-                backgroundColor: colors.background,
-                borderColor: colors.border,
+              styles.tab,
+              activeTab === "moments" && {
+                backgroundColor: colors.primary + "15",
               },
             ]}
-            onPress={() => router.push("/profile/edit")}
+            onPress={() => setActiveTab("moments")}
           >
             <Text
-              style={[styles.editButtonText, { color: colors.textPrimary }]}
+              style={[
+                styles.tabText,
+                {
+                  color:
+                    activeTab === "moments"
+                      ? colors.primary
+                      : colors.textSecondary,
+                  fontWeight:
+                    activeTab === "moments"
+                      ? fontWeight.bold
+                      : fontWeight.medium,
+                },
+              ]}
             >
-              Edit Profile
+              Moments
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.tab,
+              activeTab === "about" && {
+                backgroundColor: colors.primary + "15",
+              },
+            ]}
+            onPress={() => setActiveTab("about")}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                {
+                  color:
+                    activeTab === "about"
+                      ? colors.primary
+                      : colors.textSecondary,
+                  fontWeight:
+                    activeTab === "about" ? fontWeight.bold : fontWeight.medium,
+                },
+              ]}
+            >
+              About
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Content Tabs */}
-        <View style={[styles.tabContainer, { borderTopColor: colors.border }]}>
-          <View
-            style={[
-              styles.activeTab,
-              { borderBottomColor: colors.textPrimary },
-            ]}
-          >
-            <Ionicons name="grid" size={24} color={colors.textPrimary} />
-          </View>
-        </View>
-
-        {/* Posts Grid */}
-        <View style={styles.postsGrid}>
-          {/* Empty State */}
-          <View style={styles.emptyState}>
-            <View
-              style={[
-                styles.emptyIconContainer,
-                { borderColor: colors.textPrimary },
-              ]}
-            >
+        {/* Tab Content */}
+        <View style={styles.tabContent}>
+          {activeTab === "moments" ? (
+            <View style={styles.emptyState}>
               <Ionicons
-                name="camera-outline"
-                size={40}
+                name="images-outline"
+                size={48}
                 color={colors.textSecondary}
               />
+              <Text
+                style={[styles.emptyStateText, { color: colors.textSecondary }]}
+              >
+                No moments captured yet.
+              </Text>
             </View>
-            <Text
-              style={[styles.emptyStateText, { color: colors.textPrimary }]}
+          ) : (
+            <View
+              style={[styles.infoCard, { backgroundColor: colors.surface }]}
             >
-              No posts yet
-            </Text>
-          </View>
+              <View style={styles.infoRow}>
+                <Ionicons
+                  name="calendar-outline"
+                  size={20}
+                  color={colors.textSecondary}
+                />
+                <Text
+                  style={[styles.infoText, { color: colors.textSecondary }]}
+                >
+                  Joined {new Date().getFullYear()}
+                </Text>
+              </View>
+              {profile?.locationName ? (
+                <View style={styles.infoRow}>
+                  <Ionicons
+                    name="location-outline"
+                    size={20}
+                    color={colors.textSecondary}
+                  />
+                  <Text
+                    style={[styles.infoText, { color: colors.textSecondary }]}
+                  >
+                    {profile.locationName}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -221,14 +298,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
   },
   headerTitle: {
-    fontSize: fontSize.xl,
+    fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-  },
-  menuButton: {
-    padding: spacing.xs,
   },
   content: {
     flex: 1,
@@ -236,122 +310,151 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: spacing.xxl,
   },
-  topSection: {
-    flexDirection: "row",
+  identitySection: {
     alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    marginTop: spacing.sm,
-  },
-  avatarColumn: {
-    alignItems: "center",
-    marginRight: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
   },
   avatarContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.md,
     position: "relative",
-    marginBottom: spacing.xs,
   },
   avatar: {
-    width: 86,
-    height: 86,
-    borderRadius: 43,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
+    width: "100%",
+    height: "100%",
+    borderRadius: 60,
   },
-  onlineBadge: {
+  editAvatarBadge: {
     position: "absolute",
-    bottom: 2,
-    right: 2,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    bottom: 5,
+    right: 5,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
   },
   fullName: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    maxWidth: 90,
+    fontSize: fontSize.xxl,
+    fontWeight: fontWeight.bold,
     textAlign: "center",
   },
-  statsContainer: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  statItem: {
-    alignItems: "center",
-  },
-  statValue: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-  },
-  statLabel: {
-    fontSize: fontSize.sm,
-  },
-  bioSection: {
-    paddingHorizontal: spacing.lg,
-    marginTop: spacing.md,
+  username: {
+    fontSize: fontSize.md,
+    marginTop: 2,
+    marginBottom: spacing.md,
   },
   bio: {
+    textAlign: "center",
     fontSize: fontSize.base,
-    lineHeight: 20,
+    lineHeight: 22,
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xl,
   },
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: spacing.xs,
-    gap: 2,
-  },
-  location: {
-    fontSize: fontSize.sm,
-  },
-  actionButtons: {
-    paddingHorizontal: spacing.lg,
-    marginTop: spacing.lg,
+    justifyContent: "center",
     marginBottom: spacing.lg,
+    gap: 4,
   },
-  editButton: {
-    paddingVertical: 8,
-    borderRadius: borderRadius.md,
-    alignItems: "center",
-    borderWidth: 1,
-  },
-  editButtonText: {
+  locationText: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
   },
-  tabContainer: {
+  statsRow: {
     flexDirection: "row",
-    borderTopWidth: 1,
-    marginTop: spacing.sm,
+    justifyContent: "center",
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+    width: "100%",
   },
-  activeTab: {
-    flex: 1,
+  statCard: {
     alignItems: "center",
     paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.lg,
+    minWidth: 90,
+    // Add shadow/elevation if desired
   },
-  postsGrid: {
-    minHeight: 300,
+  statValue: {
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
+  },
+  statLabel: {
+    fontSize: fontSize.xs,
+    marginTop: 2,
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+    width: "100%",
+    justifyContent: "center",
+  },
+  actionButton: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 30, // Pill shape
+    minWidth: 140,
+    alignItems: "center",
+  },
+  actionButtonText: {
+    fontWeight: fontWeight.bold,
+    fontSize: fontSize.base,
+  },
+  outlineButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+  },
+  outlineButtonText: {
+    // color inherited
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    paddingHorizontal: spacing.xl,
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+    justifyContent: "center",
+  },
+  tab: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 20,
+  },
+  tabText: {
+    fontSize: fontSize.base,
+  },
+  tabContent: {
+    paddingHorizontal: spacing.lg,
   },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: spacing.xxl,
-  },
-  emptyIconContainer: {
-    marginBottom: spacing.sm,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    paddingVertical: spacing.xxl,
+    gap: spacing.md,
   },
   emptyStateText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
+    fontSize: fontSize.md,
+  },
+  infoCard: {
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    gap: spacing.md,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  infoText: {
+    fontSize: fontSize.base,
   },
 });

@@ -14,7 +14,7 @@ export default function UserAvatar({ user, isOwnProfile = false, onPress }) {
           { borderColor: isOwnProfile ? colors.border : colors.primary },
         ]}
       >
-        {user?.avatar ? (
+        {user?.avatar && user.avatar.length > 0 ? (
           <Image source={{ uri: user.avatar }} style={styles.avatar} />
         ) : (
           <View

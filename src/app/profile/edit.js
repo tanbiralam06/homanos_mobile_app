@@ -31,7 +31,7 @@ export default function EditProfile() {
     username: "",
     fullName: "",
     bio: "",
-    location: "",
+    locationName: "",
   });
 
   useEffect(() => {
@@ -40,11 +40,10 @@ export default function EditProfile() {
         username: profile.owner?.username || "",
         fullName: profile.fullName || "",
         bio: profile.bio || "",
-        location: profile.location || "",
+        locationName: profile.locationName || "",
       });
     }
   }, [profile]);
-
   const handleChange = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
     // Clear error when user types
@@ -137,13 +136,12 @@ export default function EditProfile() {
             textAlignVertical="top"
           />
         </View>
-
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Location</Text>
           <TextInput
             style={styles.input}
-            value={formData.location}
-            onChangeText={(text) => handleChange("location", text)}
+            value={formData.locationName}
+            onChangeText={(text) => handleChange("locationName", text)}
             placeholder="Where are you based?"
             placeholderTextColor={colors.textSecondary}
           />
