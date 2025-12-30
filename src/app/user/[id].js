@@ -16,6 +16,7 @@ import {
   getFollowStatus,
   toggleFollow,
 } from "../../services/profileService";
+import useAuthStore from "../../store/authStore";
 import {
   colors,
   spacing,
@@ -27,10 +28,13 @@ import {
 export default function UserProfile() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useAuthStore();
   const [profile, setProfile] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const isOwnProfile = user?._id === id || user?._id === profile?.owner?._id;
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -55,6 +59,7 @@ export default function UserProfile() {
   }, [id]);
 
   const handleFollowToggle = async () => {
+    if (isOwnProfile) return;
     try {
       const data = await toggleFollow(id);
       setIsFollowing(data.isFollowing);
@@ -159,23 +164,37 @@ export default function UserProfile() {
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={[styles.followButton, isFollowing && styles.followingButton]}
-            onPress={handleFollowToggle}
-          >
-            <Text
-              style={[
-                styles.followButtonText,
-                isFollowing && styles.followingButtonText,
-              ]}
+          {isOwnProfile ? (
+            <TouchableOpacity
+              style={[styles.followButton, styles.editButton]}
+              onPress={() => router.push("/settings/account")}
             >
-              {isFollowing ? "Following" : "Follow"}
-            </Text>
-          </TouchableOpacity>
+              <Text style={styles.followButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={[
+                  styles.followButton,
+                  isFollowing && styles.followingButton,
+                ]}
+                onPress={handleFollowToggle}
+              >
+                <Text
+                  style={[
+                    styles.followButtonText,
+                    isFollowing && styles.followingButtonText,
+                  ]}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity style={styles.messageButton}>
-            <Text style={styles.messageButtonText}>Message</Text>
-          </TouchableOpacity>
+              <TouchableOpacity style={styles.messageButton}>
+                <Text style={styles.messageButtonText}>Message</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
         {/* Content Tabs */}
         <View style={styles.tabContainer}>
