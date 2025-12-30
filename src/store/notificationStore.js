@@ -28,7 +28,7 @@ const useNotificationStore = create((set, get) => ({
           : [...state.notifications, ...data.notifications],
         unreadCount: data.unreadCount,
         page: page + 1,
-        hasMore: data.notifications.length === 20, // Assuming limit 20
+        hasMore: data.notifications.length === 15,
         loading: false,
       }));
     } catch (error) {

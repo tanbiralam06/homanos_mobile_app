@@ -164,12 +164,28 @@ export default function NotificationsScreen() {
               colors={[colors.primary]}
             />
           }
-          onEndReached={() => {
-            if (hasMore && !loading) {
-              fetchNotifications(false);
-            }
-          }}
-          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            hasMore && !loading ? (
+              <TouchableOpacity
+                onPress={() => fetchNotifications(false)}
+                style={{
+                  padding: spacing.md,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontWeight: fontWeight.semibold,
+                    fontSize: fontSize.sm,
+                  }}
+                >
+                  View older notifications
+                </Text>
+              </TouchableOpacity>
+            ) : null
+          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons
