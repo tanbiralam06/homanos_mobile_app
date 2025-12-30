@@ -150,7 +150,7 @@ export default function Profile() {
           </View>
 
           {/* Action Buttons */}
-          <View style={styles.actionRow}>
+          {/* <View style={styles.actionRow}>
             <TouchableOpacity
               style={[styles.actionButton, { backgroundColor: colors.primary }]}
               onPress={() => router.push("/profile/edit")}
@@ -177,7 +177,7 @@ export default function Profile() {
                 Share
               </Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
 
         {/* Content Tabs */}
