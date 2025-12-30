@@ -79,9 +79,8 @@ export default function ChatroomScreen() {
     loadChatroom();
 
     return () => {
-      if (isJoined) {
-        handleLeave(false);
-      }
+      // socketService.leaveRoom(roomId); // Just disconnect socket, don't remove from DB
+      socketService.removeAllListeners();
     };
   }, []);
 
@@ -133,18 +132,32 @@ export default function ChatroomScreen() {
     }
   };
 
-  const handleLeave = async (navigate = true) => {
-    try {
-      socketService.leaveRoom(roomId);
-      socketService.removeAllListeners();
-      await leaveChatroom(roomId);
+  // Navigates back WITHOUT removing user from room
+  const handleBack = () => {
+    socketService.leaveRoom(roomId);
+    socketService.removeAllListeners();
+    router.back();
+  };
 
-      if (navigate) {
-        router.back();
-      }
-    } catch (error) {
-      console.error("Error leaving room:", error);
-    }
+  // Explicitly leaves the room (API call)
+  const handleQuitRoom = async () => {
+    Alert.alert("Leave Room", "Are you sure you want to leave this chatroom?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Leave",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            socketService.leaveRoom(roomId);
+            socketService.removeAllListeners();
+            await leaveChatroom(roomId);
+            router.back();
+          } catch (error) {
+            console.error("Error leaving room:", error);
+          }
+        },
+      },
+    ]);
   };
 
   const handleSendMessage = () => {
@@ -234,7 +247,7 @@ export default function ChatroomScreen() {
           { backgroundColor: colors.surface, borderBottomColor: colors.border },
         ]}
       >
-        <TouchableOpacity onPress={() => handleLeave()}>
+        <TouchableOpacity onPress={handleBack}>
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
@@ -245,13 +258,15 @@ export default function ChatroomScreen() {
             {room?.topic}
           </Text>
         </View>
-        <TouchableOpacity>
-          <Ionicons
-            name="information-circle-outline"
-            size={24}
-            color={colors.primary}
-          />
-        </TouchableOpacity>
+        {isJoined && (
+          <TouchableOpacity onPress={handleQuitRoom}>
+            <Ionicons
+              name="exit-outline" // Changed icon to exit
+              size={24}
+              color={colors.error || "#FF5252"} // Use red for exit
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       <KeyboardAvoidingView
