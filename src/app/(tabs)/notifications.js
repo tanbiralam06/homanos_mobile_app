@@ -52,12 +52,21 @@ export default function NotificationsScreen() {
       router.push(`/user/${notification.sender._id}`);
     } else if (notification.type === "NEARBY") {
       router.push("/discovery");
+    } else if (notification.type === "MESSAGE") {
+      router.push({
+        pathname: "/private-chat/[userId]",
+        params: {
+          userId: notification.sender._id,
+          username: notification.sender.username,
+        },
+      });
     }
   };
 
   const renderItem = ({ item }) => {
     const isFollow = item.type === "FOLLOW";
     const isNearby = item.type === "NEARBY";
+    const isMessage = item.type === "MESSAGE";
     const sender = item.sender;
 
     return (
@@ -80,12 +89,22 @@ export default function NotificationsScreen() {
               style={[
                 styles.defaultIcon,
                 {
-                  backgroundColor: isFollow ? colors.primary : colors.secondary,
+                  backgroundColor: isFollow
+                    ? colors.primary
+                    : isMessage
+                    ? "#2196F3"
+                    : colors.secondary,
                 },
               ]}
             >
               <Ionicons
-                name={isFollow ? "person-add" : "navigate"}
+                name={
+                  isFollow
+                    ? "person-add"
+                    : isMessage
+                    ? "chatbubble-ellipses"
+                    : "navigate"
+                }
                 size={20}
                 color="#fff"
               />
@@ -95,11 +114,23 @@ export default function NotificationsScreen() {
           <View
             style={[
               styles.typeBadge,
-              { backgroundColor: isFollow ? colors.primary : colors.secondary },
+              {
+                backgroundColor: isFollow
+                  ? colors.primary
+                  : isMessage
+                  ? "#2196F3"
+                  : colors.secondary,
+              },
             ]}
           >
             <Ionicons
-              name={isFollow ? "person-add" : "navigate"}
+              name={
+                isFollow
+                  ? "person-add"
+                  : isMessage
+                  ? "chatbubble-ellipses"
+                  : "navigate"
+              }
               size={10}
               color="#fff"
             />
@@ -111,7 +142,11 @@ export default function NotificationsScreen() {
             <Text style={{ fontWeight: fontWeight.bold }}>
               {sender?.username || "System"}
             </Text>{" "}
-            {item.message}
+            {item.type === "MESSAGE"
+              ? item.groupCount > 1
+                ? `sent ${item.groupCount} messages`
+                : "sent you a message"
+              : item.message}
           </Text>
           <Text style={[styles.timeText, { color: colors.textSecondary }]}>
             {new Date(item.createdAt).toLocaleDateString()}{" "}
