@@ -57,12 +57,7 @@ export default function CreateRoom() {
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={["top"]}
     >
-      <View
-        style={[
-          styles.header,
-          { backgroundColor: colors.surface, borderBottomColor: colors.border },
-        ]}
-      >
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
           Create Room
         </Text>

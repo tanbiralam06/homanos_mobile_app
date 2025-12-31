@@ -233,7 +233,7 @@ export default function Home() {
       {/* Floating Action Button */}
       <TouchableOpacity
         style={[styles.fab, { backgroundColor: colors.primary }]}
-        onPress={() => router.push("/create-room")}
+        onPress={() => router.push("/(tabs)/create")}
       >
         <Ionicons name="add" size={32} color={colors.white} />
       </TouchableOpacity>
