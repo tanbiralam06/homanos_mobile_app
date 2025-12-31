@@ -98,6 +98,44 @@ class SocketService {
     }
   }
 
+  // --- PRIVATE CHAT METHODS ---
+
+  joinPrivateChat(targetUserId) {
+    if (this.socket) {
+      this.socket.emit("join-private-chat", { targetUserId });
+    }
+  }
+
+  leavePrivateChat(chatId) {
+    if (this.socket) {
+      this.socket.emit("leave-private-chat", { chatId });
+    }
+  }
+
+  sendPrivateMessage(chatId, content) {
+    if (this.socket) {
+      this.socket.emit("send-private-message", { chatId, content });
+    }
+  }
+
+  onPrivateChatInit(callback) {
+    if (this.socket) {
+      this.socket.on("private-chat-init", callback);
+    }
+  }
+
+  onNewPrivateMessage(callback) {
+    if (this.socket) {
+      this.socket.on("new-private-message", callback);
+    }
+  }
+
+  onPrivateMessageNotification(callback) {
+    if (this.socket) {
+      this.socket.on("private-message-notification", callback);
+    }
+  }
+
   removeAllListeners() {
     if (this.socket) {
       this.socket.removeAllListeners();

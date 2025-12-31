@@ -1,18 +1,37 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
 import useAuthStore from "../store/authStore";
 import { colors } from "../utils/theme";
 import { ThemeProvider } from "../context/ThemeContext";
+import socketService from "../services/socketService";
+import ToastNotification from "../components/common/ToastNotification";
 
 export default function Layout() {
   const { isAuthenticated, isLoading, init } = useAuthStore();
   const segments = useSegments();
   const router = useRouter();
+  const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
     init();
   }, []);
+
+  useEffect(() => {
+    // Global listener for private message notifications
+    if (isAuthenticated) {
+      socketService.onPrivateMessageNotification((data) => {
+        // Don't show toast if we are already on the specific chat screen
+        // segments might look like ['private-chat', '[userId]']
+        // But we can check if the current path includes the private-chat
+        // For simplicity, just show it. If user is in chat, they see the message anyway.
+        // A better check would be seeing if current route params match senderId.
+
+        // Basic implementation: Show toast
+        setToastMessage(data);
+      });
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -43,6 +62,12 @@ export default function Layout() {
           headerShown: false,
         }}
       />
+      {toastMessage && (
+        <ToastNotification
+          message={toastMessage}
+          onHide={() => setToastMessage(null)}
+        />
+      )}
     </ThemeProvider>
   );
 }

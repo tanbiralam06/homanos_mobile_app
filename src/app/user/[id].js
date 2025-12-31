@@ -261,6 +261,15 @@ export default function UserProfile() {
                     styles.outlineButton,
                     { borderColor: colors.border },
                   ]}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/private-chat/[userId]",
+                      params: {
+                        userId: id,
+                        username: profile?.owner?.username,
+                      },
+                    })
+                  }
                 >
                   <Text
                     style={[
