@@ -6,6 +6,7 @@ import {
   logout as apiLogout,
   getCurrentUser,
 } from "../services/authService";
+import socketService from "../services/socketService";
 
 const useAuthStore = create((set) => ({
   user: null,
@@ -19,6 +20,7 @@ const useAuthStore = create((set) => ({
       const user = await getCurrentUser();
       if (user) {
         set({ user, isAuthenticated: true, isLoading: false });
+        socketService.connect();
       } else {
         set({ user: null, isAuthenticated: false, isLoading: false });
       }
@@ -32,6 +34,7 @@ const useAuthStore = create((set) => ({
     try {
       const data = await apiLogin(email, password);
       set({ user: data.user, isAuthenticated: true, isLoading: false });
+      socketService.connect();
       return true; // Success
     } catch (error) {
       set({
@@ -49,6 +52,7 @@ const useAuthStore = create((set) => ({
       // If backend sends token on signup
       if (data.accessToken) {
         set({ user: data.user, isAuthenticated: true, isLoading: false });
+        socketService.connect();
       } else {
         // If email verification is required and no token sent
         set({ isLoading: false });
@@ -64,6 +68,7 @@ const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
+    socketService.disconnect();
     set({ user: null, isAuthenticated: false });
   },
 

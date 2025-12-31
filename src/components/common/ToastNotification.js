@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   colors,
   spacing,
@@ -19,6 +20,7 @@ import {
 
 export default function ToastNotification({ message, onHide }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(-100)).current;
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export default function ToastNotification({ message, onHide }) {
 
   const handleHide = () => {
     Animated.timing(slideAnim, {
-      toValue: -100,
+      toValue: -150, // Move further up to hide completely
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
@@ -64,7 +66,13 @@ export default function ToastNotification({ message, onHide }) {
 
   return (
     <Animated.View
-      style={[styles.container, { transform: [{ translateY: slideAnim }] }]}
+      style={[
+        styles.container,
+        {
+          top: insets.top + 10, // Dynamic top position
+          transform: [{ translateY: slideAnim }],
+        },
+      ]}
     >
       <TouchableOpacity
         style={styles.content}
@@ -95,7 +103,6 @@ export default function ToastNotification({ message, onHide }) {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 50 : 40,
     left: 20,
     right: 20,
     zIndex: 9999,

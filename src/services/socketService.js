@@ -7,6 +7,7 @@ const SOCKET_URL = API_BASE_URL.replace("/api/v1", "");
 class SocketService {
   constructor() {
     this.socket = null;
+    this.pendingNotificationCallback = null;
   }
 
   async connect() {
@@ -23,6 +24,14 @@ class SocketService {
         },
         transports: ["websocket"],
       });
+
+      // Apply pending listeners
+      if (this.pendingNotificationCallback) {
+        this.socket.on(
+          "private-message-notification",
+          this.pendingNotificationCallback
+        );
+      }
 
       this.socket.on("connect", () => {
         console.log("Socket connected:", this.socket.id);
@@ -133,6 +142,9 @@ class SocketService {
   onPrivateMessageNotification(callback) {
     if (this.socket) {
       this.socket.on("private-message-notification", callback);
+    } else {
+      // Defer binding until connection
+      this.pendingNotificationCallback = callback;
     }
   }
 
