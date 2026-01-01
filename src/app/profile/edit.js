@@ -22,11 +22,14 @@ import {
   borderRadius,
 } from "../../utils/theme";
 
+import DateTimePicker from "@react-native-community/datetimepicker";
+
 export default function EditProfile() {
   const router = useRouter();
   const { profile, updateProfile, isLoading } = useProfileStore();
   const updateUser = useAuthStore((state) => state.updateUser);
   const [errors, setErrors] = useState({});
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -44,12 +47,21 @@ export default function EditProfile() {
 
   useEffect(() => {
     if (profile) {
+      let formattedBirthday = "";
+      if (profile.birthday) {
+        const date = new Date(profile.birthday);
+        const day = date.getDate().toString().padStart(2, "0");
+        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+        const year = date.getFullYear();
+        formattedBirthday = `${day}-${month}-${year}`;
+      }
+
       setFormData({
         username: profile.owner?.username || "",
         fullName: profile.fullName || "",
         bio: profile.bio || "",
         locationName: profile.locationName || "",
-        birthday: profile.birthday || "",
+        birthday: formattedBirthday,
         occupation: profile.occupation || "",
         gender: profile.gender || "",
         intent: profile.intent || "",
@@ -67,9 +79,31 @@ export default function EditProfile() {
     }
   };
 
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      // Format to DD-MM-YYYY
+      const day = selectedDate.getDate().toString().padStart(2, "0");
+      const month = (selectedDate.getMonth() + 1).toString().padStart(2, "0");
+      const year = selectedDate.getFullYear();
+      const formattedDate = `${day}-${month}-${year}`;
+      handleChange("birthday", formattedDate);
+    }
+  };
+
   const handleSave = async () => {
     try {
-      const updatedProfile = await updateProfile(formData);
+      // Create a copy of formData to transform for backend
+      const payload = { ...formData };
+
+      // Transform DD-MM-YYYY to YYYY-MM-DD for backend Date parsing
+      if (payload.birthday && /^\d{2}-\d{2}-\d{4}$/.test(payload.birthday)) {
+        const [day, month, year] = payload.birthday.split("-");
+        // Create Date object or ISO string. YYYY-MM-DD is safe for Mongoose.
+        payload.birthday = new Date(`${year}-${month}-${day}`);
+      }
+
+      const updatedProfile = await updateProfile(payload);
       // Sync with auth store if username changed
       if (updatedProfile?.owner) {
         updateUser({ username: updatedProfile.owner.username });
@@ -179,14 +213,40 @@ export default function EditProfile() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Birthday (YYYY-MM-DD)</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.birthday}
-            onChangeText={(text) => handleChange("birthday", text)}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={colors.textSecondary}
-          />
+          <Text style={styles.label}>Birthday (DD-MM-YYYY)</Text>
+          <TouchableOpacity
+            onPress={() => setShowDatePicker(true)}
+            style={styles.dateInputContainer}
+          >
+            <TextInput
+              style={[styles.input, styles.dateInput]}
+              value={formData.birthday}
+              placeholder="DD-MM-YYYY"
+              placeholderTextColor={colors.textSecondary}
+              editable={false} // Prevent manual typing, force picker usage for consistency
+              pointerEvents="none"
+            />
+            <Ionicons
+              name="calendar-outline"
+              size={24}
+              color={colors.textSecondary}
+              style={styles.calendarIcon}
+            />
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={(() => {
+                // Parse DD-MM-YYYY to Date object for picker
+                if (!formData.birthday) return new Date();
+                const [day, month, year] = formData.birthday.split("-");
+                return new Date(year, month - 1, day);
+              })()}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+              maximumDate={new Date()}
+            />
+          )}
         </View>
 
         <ChipSelector
@@ -385,5 +445,17 @@ const styles = StyleSheet.create({
   chipTextActive: {
     color: colors.white,
     fontWeight: fontWeight.bold,
+  },
+  dateInputContainer: {
+    position: "relative",
+    justifyContent: "center",
+  },
+  dateInput: {
+    paddingRight: 50, // Space for icon
+    color: colors.textPrimary,
+  },
+  calendarIcon: {
+    position: "absolute",
+    right: spacing.md,
   },
 });
