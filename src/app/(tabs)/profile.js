@@ -15,6 +15,7 @@ import useProfileStore from "../../store/profileStore";
 import { useCallback, useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
+import { Svg, Circle } from "react-native-svg";
 
 export default function Profile() {
   const user = useAuthStore((state) => state.user);
@@ -22,6 +23,7 @@ export default function Profile() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const [activeTab, setActiveTab] = useState("moments");
+  const [showCompletion, setShowCompletion] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
@@ -52,6 +54,35 @@ export default function Profile() {
       </Text>
     </TouchableOpacity>
   );
+
+  const CircularProgress = ({ size, strokeWidth, progress, color }) => {
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+    return (
+      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <Circle
+          stroke={colors.border}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={strokeWidth}
+        />
+        <Circle
+          stroke={color}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </Svg>
+    );
+  };
 
   return (
     <SafeAreaView
@@ -149,7 +180,7 @@ export default function Profile() {
             {renderStat("Posts", 0)}
           </View>
 
-          {/* Profile Completion Card */}
+          {/* Profile Completion Compact */}
           {(() => {
             const fields = [
               profile?.avatar,
@@ -167,65 +198,67 @@ export default function Profile() {
             const total = fields.length;
             const percent = Math.round((filled / total) * 100);
 
-            if (percent < 100) {
+            if (percent < 100 && showCompletion) {
               return (
                 <View
                   style={[
-                    styles.completionCard,
+                    styles.completionCompact,
                     {
                       backgroundColor: colors.surface,
                       borderColor: colors.border,
                     },
                   ]}
                 >
-                  <View style={styles.completionHeader}>
-                    <Text
-                      style={[
-                        styles.completionTitle,
-                        { color: colors.textPrimary },
-                      ]}
-                    >
-                      Profile Completion
-                    </Text>
-                    <Text
-                      style={[
-                        styles.completionPercent,
-                        { color: colors.primary },
-                      ]}
-                    >
-                      {percent}%
-                    </Text>
-                  </View>
-                  <View style={styles.progressBarBg}>
-                    <View
-                      style={[
-                        styles.progressBarFill,
-                        {
-                          width: `${percent}%`,
-                          backgroundColor: colors.primary,
-                        },
-                      ]}
+                  <View style={styles.completionLeft}>
+                    <CircularProgress
+                      size={40}
+                      strokeWidth={4}
+                      progress={percent}
+                      color={colors.primary}
                     />
+                    <View style={styles.completionInfo}>
+                      <Text
+                        style={[
+                          styles.completionTitleCompact,
+                          { color: colors.textPrimary },
+                        ]}
+                      >
+                        Profile Completion
+                      </Text>
+                      <Text
+                        style={[
+                          styles.completionPercentCompact,
+                          { color: colors.primary },
+                        ]}
+                      >
+                        {percent}% Complete
+                      </Text>
+                    </View>
                   </View>
-                  <Text
-                    style={[
-                      styles.completionText,
-                      { color: colors.textSecondary },
-                    ]}
-                  >
-                    Complete your profile to get better matches.
-                  </Text>
-                  <TouchableOpacity
-                    style={[
-                      styles.completeButton,
-                      { backgroundColor: colors.primary },
-                    ]}
-                    onPress={() => router.push("/profile/edit")}
-                  >
-                    <Text style={styles.completeButtonText}>
-                      Complete Profile
-                    </Text>
-                  </TouchableOpacity>
+
+                  <View style={styles.completionRight}>
+                    <TouchableOpacity
+                      style={[
+                        styles.completeButtonCompact,
+                        { backgroundColor: colors.primary },
+                      ]}
+                      onPress={() => router.push("/profile/edit")}
+                    >
+                      <Text style={styles.completeButtonTextCompact}>
+                        Complete
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => setShowCompletion(false)}
+                      style={styles.closeButton}
+                    >
+                      <Ionicons
+                        name="close"
+                        size={20}
+                        color={colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               );
             }
@@ -505,48 +538,49 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: fontSize.base,
   },
-  completionCard: {
+  // Compact Completion Styles
+  completionCompact: {
     width: "100%",
-    padding: spacing.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: spacing.md,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     marginBottom: spacing.xl,
+  },
+  completionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.md,
   },
-  completionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  completionInfo: {
+    justifyContent: "center",
   },
-  completionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-  },
-  completionPercent: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-  },
-  progressBarBg: {
-    height: 8,
-    backgroundColor: "#e0e0e0",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  progressBarFill: {
-    height: "100%",
-    borderRadius: 4,
-  },
-  completionText: {
+  completionTitleCompact: {
     fontSize: fontSize.sm,
-  },
-  completeButton: {
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    alignItems: "center",
-  },
-  completeButtonText: {
-    color: "#fff",
     fontWeight: fontWeight.bold,
-    fontSize: fontSize.md,
+  },
+  completionPercentCompact: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.bold,
+  },
+  completionRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  completeButtonCompact: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 15,
+  },
+  completeButtonTextCompact: {
+    color: "#fff",
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.bold,
+  },
+  closeButton: {
+    padding: 4,
   },
 });
