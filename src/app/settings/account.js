@@ -98,12 +98,7 @@ export default function AccountDetails() {
             <View
               style={[styles.divider, { backgroundColor: colors.border }]}
             />
-            {renderDetailItem(
-              "Location",
-              typeof profile?.location === "string"
-                ? profile?.location
-                : "Location Enabled"
-            )}
+            {renderDetailItem("Location", profile?.locationName || "Not set")}
           </View>
         </View>
 
