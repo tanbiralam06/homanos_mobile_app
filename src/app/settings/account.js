@@ -109,6 +109,53 @@ export default function AccountDetails() {
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+            Personal Details
+          </Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            {renderDetailItem("Occupation", profile?.occupation)}
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
+            {renderDetailItem("Birthday", formatDate(profile?.birthday))}
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
+            {renderDetailItem("Gender", profile?.gender)}
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
+            {renderDetailItem("Intent", profile?.intent)}
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
+            {renderDetailItem("Education", profile?.educationLevel)}
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
+            {renderDetailItem(
+              "Interests",
+              profile?.interests?.length > 0
+                ? profile.interests.join(", ")
+                : null
+            )}
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
+            {renderDetailItem(
+              "Languages",
+              profile?.languages?.length > 0
+                ? profile.languages.join(", ")
+                : null
+            )}
+          </View>
+        </View>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
             Private Information
           </Text>
           <View
