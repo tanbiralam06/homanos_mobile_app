@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,6 +33,13 @@ export default function EditProfile() {
     fullName: "",
     bio: "",
     locationName: "",
+    birthday: "",
+    occupation: "",
+    gender: "",
+    intent: "",
+    educationLevel: "",
+    interests: "",
+    languages: "",
   });
 
   useEffect(() => {
@@ -41,6 +49,13 @@ export default function EditProfile() {
         fullName: profile.fullName || "",
         bio: profile.bio || "",
         locationName: profile.locationName || "",
+        birthday: profile.birthday || "",
+        occupation: profile.occupation || "",
+        gender: profile.gender || "",
+        intent: profile.intent || "",
+        educationLevel: profile.educationLevel || "",
+        interests: profile.interests || "",
+        languages: profile.languages || "",
       });
     }
   }, [profile]);
@@ -96,7 +111,7 @@ export default function EditProfile() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.form}>
+      <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Username</Text>
           <TextInput
@@ -146,10 +161,141 @@ export default function EditProfile() {
             placeholderTextColor={colors.textSecondary}
           />
         </View>
-      </View>
+
+        {/* --- Algorithm Fields --- */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>More About You</Text>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Occupation</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.occupation}
+            onChangeText={(text) => handleChange("occupation", text)}
+            placeholder="What do you do?"
+            placeholderTextColor={colors.textSecondary}
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Birthday (YYYY-MM-DD)</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.birthday}
+            onChangeText={(text) => handleChange("birthday", text)}
+            placeholder="YYYY-MM-DD"
+            placeholderTextColor={colors.textSecondary}
+          />
+        </View>
+
+        <ChipSelector
+          label="Gender"
+          options={[
+            "Male",
+            "Female",
+            "Non-binary",
+            "Other",
+            "Prefer not to say",
+          ]}
+          value={formData.gender}
+          onSelect={(val) => handleChange("gender", val)}
+        />
+
+        <ChipSelector
+          label="Intent"
+          options={[
+            "Dating",
+            "Friendship",
+            "Networking",
+            "Casual",
+            "Something Serious",
+          ]}
+          value={formData.intent}
+          onSelect={(val) => handleChange("intent", val)}
+        />
+
+        <ChipSelector
+          label="Education Level"
+          options={[
+            "High School",
+            "Bachelor",
+            "Master",
+            "Doctorate",
+            "Trade School",
+            "Other",
+          ]}
+          value={formData.educationLevel}
+          onSelect={(val) => handleChange("educationLevel", val)}
+        />
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Interests (comma separated)</Text>
+          <TextInput
+            style={styles.input}
+            value={
+              Array.isArray(formData.interests)
+                ? formData.interests.join(", ")
+                : formData.interests
+            }
+            onChangeText={(text) =>
+              handleChange(
+                "interests",
+                text.split(",").map((i) => i.trim())
+              )
+            }
+            placeholder="Tech, Art, Hiking..."
+            placeholderTextColor={colors.textSecondary}
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Languages (comma separated)</Text>
+          <TextInput
+            style={styles.input}
+            value={
+              Array.isArray(formData.languages)
+                ? formData.languages.join(", ")
+                : formData.languages
+            }
+            onChangeText={(text) =>
+              handleChange(
+                "languages",
+                text.split(",").map((l) => l.trim())
+              )
+            }
+            placeholder="English, Spanish..."
+            placeholderTextColor={colors.textSecondary}
+          />
+        </View>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
+
+// Helper Component for Chips
+const ChipSelector = ({ label, options, value, onSelect }) => (
+  <View style={styles.inputGroup}>
+    <Text style={styles.label}>{label}</Text>
+    <View style={styles.chipContainer}>
+      {options.map((option) => (
+        <TouchableOpacity
+          key={option}
+          style={[styles.chip, value === option && styles.chipActive]}
+          onPress={() => onSelect(option)}
+        >
+          <Text
+            style={[styles.chipText, value === option && styles.chipTextActive]}
+          >
+            {option}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -205,5 +351,39 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     marginTop: spacing.xs,
     marginLeft: spacing.xs,
+  },
+  sectionHeader: {
+    marginBottom: spacing.md,
+    marginTop: spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    color: colors.textPrimary,
+  },
+  chipContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  chip: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  chipText: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+  },
+  chipTextActive: {
+    color: colors.white,
+    fontWeight: fontWeight.bold,
   },
 });

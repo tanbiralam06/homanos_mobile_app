@@ -149,35 +149,88 @@ export default function Profile() {
             {renderStat("Posts", 0)}
           </View>
 
-          {/* Action Buttons */}
-          {/* <View style={styles.actionRow}>
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: colors.primary }]}
-              onPress={() => router.push("/profile/edit")}
-            >
-              <Text style={[styles.actionButtonText, { color: colors.white }]}>
-                Edit Profile
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                styles.outlineButton,
-                { borderColor: colors.border },
-              ]}
-              onPress={() => {}}
-            >
-              <Text
-                style={[
-                  styles.actionButtonText,
-                  styles.outlineButtonText,
-                  { color: colors.textPrimary },
-                ]}
-              >
-                Share
-              </Text>
-            </TouchableOpacity>
-          </View> */}
+          {/* Profile Completion Card */}
+          {(() => {
+            const fields = [
+              profile?.avatar,
+              profile?.bio,
+              profile?.locationName,
+              profile?.occupation,
+              profile?.birthday,
+              profile?.gender,
+              profile?.intent,
+              profile?.educationLevel,
+              profile?.interests?.length,
+              profile?.languages?.length,
+            ];
+            const filled = fields.filter((f) => f).length;
+            const total = fields.length;
+            const percent = Math.round((filled / total) * 100);
+
+            if (percent < 100) {
+              return (
+                <View
+                  style={[
+                    styles.completionCard,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View style={styles.completionHeader}>
+                    <Text
+                      style={[
+                        styles.completionTitle,
+                        { color: colors.textPrimary },
+                      ]}
+                    >
+                      Profile Completion
+                    </Text>
+                    <Text
+                      style={[
+                        styles.completionPercent,
+                        { color: colors.primary },
+                      ]}
+                    >
+                      {percent}%
+                    </Text>
+                  </View>
+                  <View style={styles.progressBarBg}>
+                    <View
+                      style={[
+                        styles.progressBarFill,
+                        {
+                          width: `${percent}%`,
+                          backgroundColor: colors.primary,
+                        },
+                      ]}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.completionText,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Complete your profile to get better matches.
+                  </Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.completeButton,
+                      { backgroundColor: colors.primary },
+                    ]}
+                    onPress={() => router.push("/profile/edit")}
+                  >
+                    <Text style={styles.completeButtonText}>
+                      Complete Profile
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            }
+            return null;
+          })()}
         </View>
 
         {/* Content Tabs */}
@@ -449,12 +502,51 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     gap: spacing.md,
   },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-  },
   infoText: {
     fontSize: fontSize.base,
+  },
+  completionCard: {
+    width: "100%",
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    marginBottom: spacing.xl,
+    gap: spacing.md,
+  },
+  completionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  completionTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
+  completionPercent: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
+  progressBarBg: {
+    height: 8,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  progressBarFill: {
+    height: "100%",
+    borderRadius: 4,
+  },
+  completionText: {
+    fontSize: fontSize.sm,
+  },
+  completeButton: {
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
+    alignItems: "center",
+  },
+  completeButtonText: {
+    color: "#fff",
+    fontWeight: fontWeight.bold,
+    fontSize: fontSize.md,
   },
 });
