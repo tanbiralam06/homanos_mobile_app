@@ -8,19 +8,14 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import useProfileStore from "../../store/profileStore";
 import useAuthStore from "../../store/authStore";
-import {
-  colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from "../../utils/theme";
+import { useTheme } from "../../context/ThemeContext";
+import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
 
 import DateTimePicker from "@react-native-community/datetimepicker";
 
@@ -28,6 +23,11 @@ export default function EditProfile() {
   const router = useRouter();
   const { profile, updateProfile, isLoading } = useProfileStore();
   const updateUser = useAuthStore((state) => state.updateUser);
+  const { colors } = useTheme();
+
+  // Memoize styles to avoid re-creation on every render
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const [errors, setErrors] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -260,6 +260,7 @@ export default function EditProfile() {
           ]}
           value={formData.gender}
           onSelect={(val) => handleChange("gender", val)}
+          styles={styles}
         />
 
         <ChipSelector
@@ -273,6 +274,7 @@ export default function EditProfile() {
           ]}
           value={formData.intent}
           onSelect={(val) => handleChange("intent", val)}
+          styles={styles}
         />
 
         <ChipSelector
@@ -287,6 +289,7 @@ export default function EditProfile() {
           ]}
           value={formData.educationLevel}
           onSelect={(val) => handleChange("educationLevel", val)}
+          styles={styles}
         />
 
         <View style={styles.inputGroup}>
@@ -336,7 +339,7 @@ export default function EditProfile() {
 }
 
 // Helper Component for Chips
-const ChipSelector = ({ label, options, value, onSelect }) => (
+const ChipSelector = ({ label, options, value, onSelect, styles }) => (
   <View style={styles.inputGroup}>
     <Text style={styles.label}>{label}</Text>
     <View style={styles.chipContainer}>
@@ -357,105 +360,106 @@ const ChipSelector = ({ label, options, value, onSelect }) => (
   </View>
 );
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.white,
-  },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.primary,
-  },
-  saveButton: {
-    fontSize: fontSize.lg,
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-  },
-  form: {
-    padding: spacing.lg,
-  },
-  inputGroup: {
-    marginBottom: spacing.lg,
-  },
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  input: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    fontSize: fontSize.base,
-    color: colors.textPrimary,
-  },
-  textArea: {
-    height: 100,
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-    marginLeft: spacing.xs,
-  },
-  sectionHeader: {
-    marginBottom: spacing.md,
-    marginTop: spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
-  },
-  chipContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  chip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: 20,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  chipText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  chipTextActive: {
-    color: colors.white,
-    fontWeight: fontWeight.bold,
-  },
-  dateInputContainer: {
-    position: "relative",
-    justifyContent: "center",
-  },
-  dateInput: {
-    paddingRight: 50, // Space for icon
-    color: colors.textPrimary,
-  },
-  calendarIcon: {
-    position: "absolute",
-    right: spacing.md,
-  },
-});
+const createStyles = (colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      backgroundColor: colors.surface || colors.white, // fallback or explicit surface
+    },
+    title: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+      color: colors.primary,
+    },
+    saveButton: {
+      fontSize: fontSize.lg,
+      color: colors.primary,
+      fontWeight: fontWeight.bold,
+    },
+    form: {
+      padding: spacing.lg,
+    },
+    inputGroup: {
+      marginBottom: spacing.lg,
+    },
+    label: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: colors.textSecondary,
+      marginBottom: spacing.xs,
+    },
+    input: {
+      backgroundColor: colors.surface || colors.white, // Adapt to dark mode
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      fontSize: fontSize.base,
+      color: colors.textPrimary,
+    },
+    textArea: {
+      height: 100,
+    },
+    errorText: {
+      color: colors.error,
+      fontSize: fontSize.xs,
+      marginTop: spacing.xs,
+      marginLeft: spacing.xs,
+    },
+    sectionHeader: {
+      marginBottom: spacing.md,
+      marginTop: spacing.sm,
+    },
+    sectionTitle: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.bold,
+      color: colors.textPrimary,
+    },
+    chipContainer: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.sm,
+    },
+    chip: {
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderRadius: 20,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    chipActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    chipText: {
+      fontSize: fontSize.sm,
+      color: colors.textSecondary,
+    },
+    chipTextActive: {
+      color: colors.white,
+      fontWeight: fontWeight.bold,
+    },
+    dateInputContainer: {
+      position: "relative",
+      justifyContent: "center",
+    },
+    dateInput: {
+      paddingRight: 50, // Space for icon
+      color: colors.textPrimary,
+    },
+    calendarIcon: {
+      position: "absolute",
+      right: spacing.md,
+    },
+  });
