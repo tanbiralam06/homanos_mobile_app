@@ -20,6 +20,16 @@ export const toggleFollow = async (userId) => {
   return response.data.data;
 };
 
+export const toggleBlockUser = async (userId) => {
+  const response = await api.post(`/blocks/${userId}`);
+  return response.data.data;
+};
+
+export const getBlockedUsers = async () => {
+  const response = await api.get("/blocks");
+  return response.data.data;
+};
+
 export const getFollowStatus = async (userId) => {
   const response = await api.get(`/follows/s/${userId}`);
   return response.data.data;

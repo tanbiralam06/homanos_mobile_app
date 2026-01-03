@@ -16,6 +16,7 @@ import {
   getUserProfile,
   getFollowStatus,
   toggleFollow,
+  toggleBlockUser,
 } from "../../services/profileService";
 import useAuthStore from "../../store/authStore";
 import { spacing, fontSize, fontWeight, borderRadius } from "../../utils/theme";
@@ -27,6 +28,8 @@ export default function UserProfile() {
   const { user } = useAuthStore();
   const [profile, setProfile] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false); // [NEW]
+  const [showMenu, setShowMenu] = useState(false); // [NEW]
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { colors, isDark } = useTheme();
@@ -42,6 +45,7 @@ export default function UserProfile() {
           getFollowStatus(id),
         ]);
         setProfile(profileData);
+        setIsBlocked(profileData.isBlockedByMe || false); // [NEW]
         setIsFollowing(followData.isFollowing);
       } catch (err) {
         console.error("Error fetching user profile:", err);
@@ -70,6 +74,26 @@ export default function UserProfile() {
       }));
     } catch (error) {
       console.error("Error toggling follow:", error);
+    }
+  };
+
+  const handleBlockToggle = async () => {
+    try {
+      const data = await toggleBlockUser(id);
+      setIsBlocked(data.isBlocked);
+      if (data.isBlocked) {
+        setIsFollowing(false); // Unfollow if blocked
+        // Optionally update follower count locallly
+        setProfile((prev) => ({
+          ...prev,
+          followersCount: Math.max(
+            (prev.followersCount || 0) - (isFollowing ? 1 : 0),
+            0
+          ),
+        }));
+      }
+    } catch (error) {
+      console.error("Error toggling block:", error);
     }
   };
 
@@ -146,7 +170,38 @@ export default function UserProfile() {
         <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
           {profile?.owner?.username || "Profile"}
         </Text>
-        <View style={{ width: 24 }} />
+
+        {/* Menu Options */}
+        <View style={{ position: "relative", zIndex: 100 }}>
+          <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
+            <Ionicons
+              name="ellipsis-vertical"
+              size={24}
+              color={colors.textPrimary}
+            />
+          </TouchableOpacity>
+
+          {showMenu && (
+            <View
+              style={[
+                styles.menuDropdown,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  setShowMenu(false);
+                  handleBlockToggle();
+                }}
+              >
+                <Text style={[styles.menuItemText, { color: colors.error }]}>
+                  {isBlocked ? "Unblock User" : "Block User"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
       </View>
 
       <ScrollView
@@ -556,5 +611,27 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: fontSize.base,
+  },
+  menuDropdown: {
+    position: "absolute",
+    top: 30,
+    right: 0,
+    width: 150,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    padding: spacing.sm,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  menuItem: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  menuItemText: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.medium,
   },
 });
